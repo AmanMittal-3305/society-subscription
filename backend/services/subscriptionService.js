@@ -1,0 +1,69 @@
+const pool = require("../config/db")
+
+const getPlans = async (admin_id) => {
+
+  const result = await pool.query(
+    `SELECT *
+     FROM subscription_plans
+     WHERE admin_id = $1
+     ORDER BY flat_type`,
+    [admin_id]
+  )
+
+  return result.rows
+}
+
+const getPlanById = async (id) => {
+  const result = await pool.query(
+    `SELECT * FROM subscription_plans WHERE plan_id=$1`,
+    [id]
+  )
+
+  return result.rows[0]
+}
+
+const createPlan = async ({ admin_id, flat_type, monthly_rate, effective_from }) => {
+
+  const result = await pool.query(
+    `INSERT INTO subscription_plans
+     (admin_id, flat_type, monthly_rate, effective_from)
+     VALUES ($1,$2,$3,$4)
+     RETURNING *`,
+    [admin_id, flat_type, monthly_rate, effective_from]
+  )
+
+  return result.rows[0]
+}
+
+const updatePlan = async (admin_id, plan_id, { monthly_rate }) => {
+
+  const result = await pool.query(
+    `UPDATE subscription_plans
+     SET monthly_rate=$1,
+         updated_at=CURRENT_TIMESTAMP
+     WHERE plan_id=$2
+     AND admin_id=$3
+     RETURNING *`,
+    [monthly_rate, plan_id, admin_id]
+  )
+
+  return result.rows[0]
+}
+
+const deletePlan = async (admin_id, plan_id) => {
+
+  await pool.query(
+    `DELETE FROM subscription_plans
+     WHERE plan_id=$1
+     AND admin_id=$2`,
+    [plan_id, admin_id]
+  )
+}
+
+module.exports = {
+  getPlans,
+  getPlanById,
+  createPlan,
+  updatePlan,
+  deletePlan
+}

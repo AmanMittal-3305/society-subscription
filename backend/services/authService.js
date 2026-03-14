@@ -37,34 +37,44 @@ const login = async ({ email, password, role }) => {
   const result = await pool.query(
     `SELECT * FROM users WHERE email=$1`,
     [email]
-  );
+  )
 
-  if (result.rows.length === 0) return null;
+  if(result.rows.length === 0) return null
 
-  const user = result.rows[0];
+  const user = result.rows[0]
 
-  const validPassword = await bcrypt.compare(password, user.password_hash);
-  if (!validPassword) return null;
+  let validPassword = false
 
-  if (user.role !== role) return null;
+  // if password is plain text (old resident)
+  if(user.password_hash === password){
+    validPassword = true
+  }else{
+    validPassword = await bcrypt.compare(password, user.password_hash)
+  }
+
+  if(!validPassword) return null
+
+  if(user.role !== role) return null
 
   const token = jwt.sign(
     {
-      user_id: user.user_id,
-      email: user.email,
-      role: user.role,
+      user_id:user.user_id,
+      email:user.email,
+      role:user.role
     },
     JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+    {
+      expiresIn:"7d"
+    }
+  )
 
   return {
-    user_id: user.user_id,
-    email: user.email,
-    full_name: user.full_name,
-    role: user.role,
-    token,
-  };
-};
+    user_id:user.user_id,
+    email:user.email,
+    full_name:user.full_name,
+    role:user.role,
+    token
+  }
+}
 
 module.exports = { register, login };

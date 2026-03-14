@@ -7,6 +7,7 @@ const adminRoutes = require("./routes/adminRoutes")
 // const subscriptionRoutes = require("./routes/subscriptionRoutes")
 // const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const authRoutes = require("./routes/authRoutes")
+const residentRoutes =  require("./routes/residentRoutes")
 
 const app = express()
 
@@ -28,6 +29,8 @@ app.use(express.json())
 
 app.use("/api/admin", adminRoutes)
 // app.use("/api/subscriptions", subscriptionRoutes)
+
+app.use("/api/resident", residentRoutes)
 
 app.use("/api/auth", authRoutes)
 

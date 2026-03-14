@@ -4,7 +4,7 @@ exports.getMonthlyReport = async (req, res) => {
 
   const { month } = req.query;
 
-  const formattedMonth = `${month}-01`;
+  const formattedMonth = month;
 
   try {
 
@@ -23,7 +23,7 @@ exports.getMonthlyReport = async (req, res) => {
 
     // Pending amount
     const pendingAmount = await pool.query(
-      `SELECT COALESCE(SUM(amount_due),0) AS total
+      `SELECT COALESCE(SUM(amount),0) AS total
        FROM monthly_records
        WHERE DATE_TRUNC('month', billing_month)
        = DATE_TRUNC('month',$1::date)

@@ -80,12 +80,12 @@ export default function RegisterPage() {
           required
         />
 
-        
+
 
         {error && <p className="text-red-500 mb-2">{error}</p>}
 
         <div>
-            <Link href={"/admin/login"}> Already registered !! Login</Link>
+          <Link href={"/admin/login"}> Already registered !! Login</Link>
         </div>
 
         <button

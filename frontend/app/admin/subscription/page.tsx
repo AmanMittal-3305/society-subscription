@@ -8,194 +8,231 @@ const API = process.env.NEXT_PUBLIC_API_URL
 export default function SubscriptionPage() {
 
   const [plans, setPlans] = useState<any[]>([])
+
   const [flatType, setFlatType] = useState("")
   const [monthlyRate, setMonthlyRate] = useState("")
+
   const [editId, setEditId] = useState<string | null>(null)
   const [editRate, setEditRate] = useState("")
 
-  // Fetch Plans
+  // FETCH
   const fetchPlans = async () => {
-    try {
 
-      const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token")
 
-      const res = await axios.get(`${API}/api/admin/subscriptions`, {
+    const res = await axios.get(
+
+      `${API}/api/admin/subscriptions`,
+
+      {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      })
+      }
+    )
 
-      setPlans(res.data)
-
-    } catch (error) {
-      console.error(error)
-    }
+    setPlans(res.data)
   }
 
   useEffect(() => {
     fetchPlans()
   }, [])
 
-  // Create Plan
+  // CREATE
   const createPlan = async () => {
-    try {
 
-      const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token")
 
-      await axios.post(
-        `${API}/api/admin/subscriptions`,
-        {
-          flat_type: flatType,
-          monthly_rate: monthlyRate
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+    await axios.post(
 
-      setFlatType("")
-      setMonthlyRate("")
-      fetchPlans()
+      `${API}/api/admin/subscriptions`,
 
-    } catch (error) {
-      console.error(error)
-    }
-  }
+      {
+        flat_type: flatType,
+        monthly_rate: monthlyRate
+      },
 
-  // Delete Plan
-  const deletePlan = async (id: string) => {
-    try {
-
-      const token = localStorage.getItem("token")
-
-      await axios.delete(`${API}/api/admin/subscriptions/${id}`, {
+      {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      })
+      }
+    )
 
-      fetchPlans()
+    setFlatType("")
+    setMonthlyRate("")
 
-    } catch (error) {
-      console.error(error)
-    }
+    fetchPlans()
   }
 
-  // Update Plan
-  const updatePlan = async () => {
-    try {
+  // DELETE
+  const deletePlan = async (id: string) => {
 
-      const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token")
 
-      await axios.put(
-        `${API}/api/admin/subscriptions/${editId}`,
-        {
-          monthly_rate: editRate
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+    await axios.delete(
+
+      `${API}/api/admin/subscriptions/${id}`,
+
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      )
+      }
+    )
 
-      setEditId(null)
-      setEditRate("")
-      fetchPlans()
+    fetchPlans()
+  }
 
-    } catch (error) {
-      console.error(error)
-    }
+  // UPDATE
+  const updatePlan = async () => {
+
+    const token = localStorage.getItem("token")
+
+    await axios.put(
+
+      `${API}/api/admin/subscriptions/${editId}`,
+
+      {
+        monthly_rate: editRate
+      },
+
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+
+    setEditId(null)
+    setEditRate("")
+
+    fetchPlans()
   }
 
   return (
-    <div style={{ padding: "40px" }}>
 
-      <h1>Subscription Plans</h1>
+    <div className="p-10 max-w-4xl mx-auto">
 
-      {/* Create Plan */}
+      <h1 className="text-3xl font-bold mb-8">
+        Subscription Plans
+      </h1>
 
-      <h2>Create Plan</h2>
+      {/* CREATE */}
 
-      <input
-        placeholder="Flat Type (1BHK)"
-        value={flatType}
-        onChange={(e) => setFlatType(e.target.value)}
-      />
+      <div className="bg-white shadow p-6 rounded mb-10">
 
-      <input
-        placeholder="Monthly Rate"
-        value={monthlyRate}
-        onChange={(e) => setMonthlyRate(e.target.value)}
-      />
+        <h2 className="text-xl mb-4">
+          Create Plan
+        </h2>
 
-      <button onClick={createPlan}>Create</button>
+        <div className="flex gap-3">
 
+          <input
+            className="border p-2 rounded"
+            placeholder="Flat Type"
+            value={flatType}
+            onChange={(e) => setFlatType(e.target.value)}
+          />
 
-      <hr style={{ margin: "30px 0" }} />
+          <input
+            className="border p-2 rounded"
+            placeholder="Monthly Rate"
+            value={monthlyRate}
+            onChange={(e) => setMonthlyRate(e.target.value)}
+          />
 
-
-      {/* Plan List */}
-
-      <h2>All Plans</h2>
-
-      {plans.map((plan) => (
-
-        <div
-          key={plan.plan_id}
-          style={{
-            border: "1px solid gray",
-            padding: "10px",
-            marginBottom: "10px"
-          }}
-        >
-
-          <h3>{plan.flat_type}</h3>
-
-          {editId === plan.plan_id ? (
-
-            <>
-              <input
-                value={editRate}
-                onChange={(e) => setEditRate(e.target.value)}
-              />
-
-              <button onClick={updatePlan}>
-                Save
-              </button>
-
-              <button onClick={() => setEditId(null)}>
-                Cancel
-              </button>
-            </>
-
-          ) : (
-
-            <>
-              <p>₹{plan.monthly_rate}</p>
-
-              <button
-                onClick={() => {
-                  setEditId(plan.plan_id)
-                  setEditRate(plan.monthly_rate)
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => deletePlan(plan.plan_id)}
-              >
-                Delete
-              </button>
-            </>
-          )}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={createPlan}
+          >
+            Create
+          </button>
 
         </div>
+      </div>
 
-      ))}
+      {/* LIST */}
+
+      <div className="grid gap-4">
+
+        {plans.map((plan) => (
+          <div
+            key={plan.plan_id}
+            className="border p-4 rounded flex justify-between items-center"
+          >
+
+            <div>
+
+              <h3 className="font-semibold">
+                {plan.flat_type}
+              </h3>
+
+              {editId === plan.plan_id ? (
+
+                <input
+                  className="border p-1 mt-1"
+                  value={editRate}
+                  onChange={(e) => setEditRate(e.target.value)}
+                />
+
+              ) : (
+
+                <p>₹{plan.monthly_rate}</p>
+
+              )}
+
+            </div>
+
+            <div className="flex gap-2">
+
+              {editId === plan.plan_id ? (
+
+                <>
+                  <button
+                    className="bg-green-600 text-white px-3 py-1 rounded"
+                    onClick={updatePlan}
+                  >
+                    Save
+                  </button>
+
+                  <button
+                    className="bg-gray-400 text-white px-3 py-1 rounded"
+                    onClick={() => setEditId(null)}
+                  >
+                    Cancel
+                  </button>
+                </>
+
+              ) : (
+
+                <>
+                  <button
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    onClick={() => {
+                      setEditId(plan.plan_id)
+                      setEditRate(plan.monthly_rate)
+                    }}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    onClick={() => deletePlan(plan.plan_id)}
+                  >
+                    Delete
+                  </button>
+                </>
+
+              )}
+
+            </div>
+
+          </div>
+        ))}
+
+      </div>
 
     </div>
   )

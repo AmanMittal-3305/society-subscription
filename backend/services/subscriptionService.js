@@ -1,5 +1,6 @@
 const pool = require("../config/db")
 
+// GET ALL PLANS
 const getPlans = async (admin_id) => {
 
   const result = await pool.query(
@@ -13,29 +14,50 @@ const getPlans = async (admin_id) => {
   return result.rows
 }
 
-const getPlanById = async (id) => {
+// GET SINGLE PLAN
+const getPlanById = async (admin_id, plan_id) => {
+
   const result = await pool.query(
-    `SELECT * FROM subscription_plans WHERE plan_id=$1`,
-    [id]
+    `SELECT *
+     FROM subscription_plans
+     WHERE plan_id = $1
+     AND admin_id = $2`,
+    [plan_id, admin_id]
   )
 
   return result.rows[0]
 }
 
-const createPlan = async ({ admin_id, flat_type, monthly_rate, effective_from }) => {
+// CREATE PLAN
+const createPlan = async ({
+  admin_id,
+  flat_type,
+  monthly_rate,
+  effective_from
+}) => {
 
   const result = await pool.query(
     `INSERT INTO subscription_plans
      (admin_id, flat_type, monthly_rate, effective_from)
      VALUES ($1,$2,$3,$4)
      RETURNING *`,
-    [admin_id, flat_type, monthly_rate, effective_from]
+    [
+      admin_id,
+      flat_type,
+      monthly_rate,
+      effective_from || new Date()
+    ]
   )
 
   return result.rows[0]
 }
 
-const updatePlan = async (admin_id, plan_id, { monthly_rate }) => {
+// UPDATE PLAN
+const updatePlan = async (
+  admin_id,
+  plan_id,
+  { monthly_rate }
+) => {
 
   const result = await pool.query(
     `UPDATE subscription_plans
@@ -50,6 +72,7 @@ const updatePlan = async (admin_id, plan_id, { monthly_rate }) => {
   return result.rows[0]
 }
 
+// DELETE PLAN
 const deletePlan = async (admin_id, plan_id) => {
 
   await pool.query(

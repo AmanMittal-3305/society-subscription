@@ -2,36 +2,43 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
-const API = "http://localhost:5000"
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function PaymentEntryPage(){
 
   const [records,setRecords] = useState<any[]>([])
   const [selectedRecord,setSelectedRecord] = useState<any>(null)
 
-  const [month,setMonth] = useState("2025-07-01")
+  const [month,setMonth] = useState(new Date())
 
   const [form,setForm] = useState({
     record_id:"",
-    amount_paid:"",
+    // amount_paid:"",
     payment_mode:"CASH",
     payment_source:"OFFLINE",
     transaction_id:""
   })
 
 
-
-  // Fetch unpaid flats
   const fetchRecords = async()=>{
 
     try{
 
       const token = localStorage.getItem("token")
 
+      const formattedMonth =
+        month.getFullYear() +
+        "-" +
+        String(month.getMonth()+1).padStart(2,"0") +
+        "-01"
+
       const res = await axios.get(
-        `${API}/api/admin/payment-entry?month=${month}`,
+        `${API}/api/admin/payment-entry`,
         {
+          params:{ month: formattedMonth },
           headers:{
             Authorization:`Bearer ${token}`
           }
@@ -47,14 +54,12 @@ export default function PaymentEntryPage(){
   }
 
 
-
   useEffect(()=>{
     fetchRecords()
   },[month])
 
 
 
-  // Handle flat selection
   const handleFlatChange = (record_id:string)=>{
 
     const record = records.find(r => r.record_id === record_id)
@@ -64,14 +69,13 @@ export default function PaymentEntryPage(){
     setForm({
       ...form,
       record_id:record_id,
-      amount_paid:record.amount_due
+      // amount_paid:record.amount
     })
 
   }
 
 
 
-  // Submit payment
   const handleSubmit = async(e:any)=>{
 
     e.preventDefault()
@@ -92,15 +96,15 @@ export default function PaymentEntryPage(){
 
       alert("Payment recorded")
 
+      setSelectedRecord(null)
+
       setForm({
         record_id:"",
-        amount_paid:"",
+        // amount_paid:"",
         payment_mode:"CASH",
         payment_source:"OFFLINE",
         transaction_id:""
       })
-
-      setSelectedRecord(null)
 
       fetchRecords()
 
@@ -119,15 +123,17 @@ export default function PaymentEntryPage(){
 
       <h2>Manual Payment Entry</h2>
 
-
       <div style={{marginBottom:"20px"}}>
 
         <label>Select Month</label>
 
-        <input
-          type="date"
-          value={month}
-          onChange={(e)=>setMonth(e.target.value)}
+        <br/>
+
+        <DatePicker
+          selected={month}
+          onChange={(date:any)=>setMonth(date)}
+          dateFormat="MMMM yyyy"
+          showMonthYearPicker
         />
 
       </div>
@@ -150,7 +156,7 @@ export default function PaymentEntryPage(){
 
             {records.map((r)=>(
               <option key={r.record_id} value={r.record_id}>
-                Flat Number: {r.flat_number} 
+                Flat {r.flat_number}
               </option>
             ))}
 
@@ -164,28 +170,12 @@ export default function PaymentEntryPage(){
 
           <div style={{marginTop:"10px"}}>
 
-            <label>
-              Amount Due: ₹{selectedRecord.amount_due}
-            </label>
+            Amount Due: ₹{selectedRecord.amount}
 
           </div>
 
         )}
 
-
-
-        <div style={{marginTop:"10px"}}>
-
-          <label>Amount Paid</label>
-
-          <input
-            type="number"
-            required
-            value={form.amount_paid}
-            onChange={(e)=>setForm({...form,amount_paid:e.target.value})}
-          />
-
-        </div>
 
 
 
@@ -212,7 +202,7 @@ export default function PaymentEntryPage(){
 
         <div style={{marginTop:"10px"}}>
 
-          <label>Transaction ID (optional)</label>
+          <label>Transaction ID</label>
 
           <input
             type="text"

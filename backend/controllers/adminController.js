@@ -33,23 +33,24 @@ const adminService = require("../services/adminService")
 //   }
 // }
 
-const getDashboard = async (req, res) => {
-  try {
-    const data = await adminService.getDashboardData();
+// const getDashboard = async (req, res) => {
+//   try {
+//     const adminId = req.user.user_id;
+//     const data = await adminService.getDashboardData(adminId);
 
-    res.json({
-      success: true,
-      data: data
-    });
+//     res.json({
+//       success: true,
+//       data: data
+//     });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching dashboard data",
-      error: error.message
-    });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error fetching dashboard data",
+//       error: error.message
+//     });
+//   }
+// };
 
 // const getMonthlyRecords = async (req, res) => {
 //   try {
@@ -233,7 +234,7 @@ const generateMonthlyRecords = async (req, res) => {
 module.exports = {
   //   register,
   //   login,
-  getDashboard,
+  // getDashboard,
   generateMonthlyRecords,
   getMonthlyRecords,
   generateBills,

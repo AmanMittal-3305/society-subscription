@@ -1,27 +1,15 @@
-// import Image from "next/image";
+"use client"
 
-import Link from "next/link";
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
-export default function Home() {
-  return (
-    <div className="main-container" style={{
-      display : "flex",
-      flexDirection : "row",
-      height : "200px",
-      width : "200px"
-    }}>
-    <div style={{
-      height : "200px",
-      width : "200px"
-    }}>
-      <Link href={"/admin/register"} >Login as Admin</Link>
-    </div>
-    <div style={{
-      height : "200px",
-      width : "200px"
-    }}>
-      <Link href={"/register"} > Login as resident</Link>
-    </div>
-    </div>
-  );
+export default function Page() {
+
+  const router = useRouter()
+
+  useEffect(() => {
+    router.replace("/login")
+  }, [])
+
+  return null
 }

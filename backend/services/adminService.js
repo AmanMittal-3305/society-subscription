@@ -38,40 +38,64 @@ const pool = require("../config/db")
 //   }
 // }
 
-const getDashboardData = async () => {
-  const totalFlats = await pool.query(
-    `SELECT COUNT(*) FROM flats`
-  );
+// const getDashboardData = async (adminId) => {
+//   const totalFlats = await pool.query(
+//     `SELECT COUNT(*) FROM flats WHERE admin_id = $1`, [adminId]
+//   );
 
-  const totalResidents = await pool.query(
-    `SELECT COUNT(*) FROM users WHERE role='resident'`
-  );
+//   const totalResidents = await pool.query(
+//     `SELECT COUNT(resident_id) FROM flats WHERE admin_id = $1 AND resident_id IS NOT NULL`, [adminId]
+//   );
 
-  const totalCollected = await pool.query(
-    `SELECT COALESCE(SUM(amount_paid),0) FROM payments`
-  );
+//   const totalCollected = await pool.query(
+//     `SELECT COALESCE(SUM(p.amount_paid),0) as sum
+//      FROM payments p
+//      JOIN monthly_records mr ON p.record_id = mr.record_id
+//      JOIN flats f ON mr.flat_id = f.flat_id
+//      WHERE f.admin_id = $1`, [adminId]
+//   );
 
-  const totalPending = await pool.query(
-    `SELECT COALESCE(SUM(amount_due),0) FROM monthly_records WHERE status='pending'`
-  );
+//   const totalPending = await pool.query(
+//     `SELECT COALESCE(SUM(mr.amount_due),0) as sum
+//      FROM monthly_records mr
+//      JOIN flats f ON mr.flat_id = f.flat_id
+//      WHERE f.admin_id = $1 AND mr.status = 'PENDING'`, [adminId]
+//   );
 
-  const paidRecords = await pool.query(
-    `SELECT COUNT(*) FROM monthly_records WHERE status='paid'`
-  );
+//   const recentTransactions = await pool.query(
+//     `SELECT mr.record_id as id, f.flat_number as flat, mr.amount_due as amount, mr.created_at as date, mr.status
+//      FROM monthly_records mr
+//      JOIN flats f ON mr.flat_id = f.flat_id
+//      WHERE f.admin_id = $1
+//      ORDER BY mr.created_at DESC
+//      LIMIT 4`, [adminId]
+//   );
 
-  const pendingRecords = await pool.query(
-    `SELECT COUNT(*) FROM monthly_records WHERE status='pending'`
-  );
+//   const revenueAnalyticsResult = await pool.query(
+//     `SELECT to_char(billing_month, 'Mon') as month, COALESCE(SUM(amount_due),0) as amount
+//      FROM monthly_records mr
+//      JOIN flats f ON mr.flat_id = f.flat_id
+//      WHERE f.admin_id = $1
+//      GROUP BY billing_month
+//      ORDER BY billing_month DESC
+//      LIMIT 6`, [adminId]
+//   );
 
-  return {
-    total_flats: totalFlats.rows[0].count,
-    total_residents: totalResidents.rows[0].count,
-    total_collected: totalCollected.rows[0].coalesce,
-    total_pending: totalPending.rows[0].coalesce,
-    paid_records: paidRecords.rows[0].count,
-    pending_records: pendingRecords.rows[0].count
-  };
-};
+//   const revenueAnalyticsRaw = revenueAnalyticsResult.rows.reverse();
+//   const revenueAnalytics = {
+//     months: revenueAnalyticsRaw.map(r => r.month),
+//     amounts: revenueAnalyticsRaw.map(r => parseFloat(r.amount))
+//   };
+
+//   return {
+//     total_flats: parseInt(totalFlats.rows[0].count),
+//     total_residents: parseInt(totalResidents.rows[0].count),
+//     total_collected: parseFloat(totalCollected.rows[0].sum),
+//     total_pending: parseFloat(totalPending.rows[0].sum),
+//     recent_transactions: recentTransactions.rows,
+//     revenue_analytics: revenueAnalytics
+//   };
+// };
 
 // GET MONTHLY RECORDS
 const getMonthlyRecords = async (month) => {
@@ -222,9 +246,9 @@ const manualPayment = async (data) => {
 };
 
 module.exports = {
-//   register,
-//   login,
-  getDashboardData,
+  //   register,
+  //   login,
+  // getDashboardData,
   getMonthlyRecords,
   generateMonthlyRecords,
   generateBills,

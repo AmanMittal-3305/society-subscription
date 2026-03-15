@@ -1,6 +1,9 @@
 const express = require("express")
 const cors = require("cors")
 require("dotenv").config()
+const session = require("express-session");
+const passport = require("./config/passport");
+
 
 const adminRoutes = require("./routes/adminRoutes")
 // const flatRoutes = require("./routes/flatRoutes")
@@ -9,7 +12,20 @@ const adminRoutes = require("./routes/adminRoutes")
 const authRoutes = require("./routes/authRoutes")
 const residentRoutes =  require("./routes/residentRoutes")
 
+
+
 const app = express()
+
+app.use(
+  session({
+    secret: "secretkey",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const bootup = async () => {
     await dbConnection()

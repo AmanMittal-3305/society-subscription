@@ -1,4 +1,5 @@
 const authService = require("../services/authService");
+const { db } = require("../config/firebase");
 
 const register = async (req, res) => {
   try {
@@ -13,6 +14,14 @@ const register = async (req, res) => {
     }
 
     const user = await authService.register(req.body);
+
+    // After user is successfully created in your own DB
+await db.collection("users").doc(user.user_id).set({
+  full_name: full_name,
+  email: email,
+  role: role,        // "resident" or "admin"
+  fcmToken: "",      // will be updated from frontend later
+});
 
     res.status(201).json({
       success: true,

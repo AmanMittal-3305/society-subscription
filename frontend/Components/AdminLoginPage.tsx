@@ -92,6 +92,15 @@ export default function AdminLoginPage() {
           />
         </div>
       </div>
+      <button
+        type="button"
+        onClick={() =>
+          window.location.href = "http://localhost:5000/api/auth/google"
+        }
+        className="w-full bg-blue-500 text-white py-3.5 rounded-xl font-semibold"
+      >
+        Login with Google
+      </button>
 
       <button
         type="submit"
@@ -107,6 +116,8 @@ export default function AdminLoginPage() {
           </>
         )}
       </button>
+
+
     </motion.form>
   )
 }

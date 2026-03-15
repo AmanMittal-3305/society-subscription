@@ -11,6 +11,7 @@ const paymentController = require("../controllers/paymentController")
 const reportController = require("../controllers/reportController")
 const { dashboard } = require("../controllers/dashboardController")
 const adminOnly = require("../middleware/adminMiddleware")
+const notificationController = require("../controllers/notificationController")
 
 router.use(authMiddleware)
 router.use(adminOnly)
@@ -45,5 +46,7 @@ router.get("/reports/monthly", reportController.getMonthlyReport)
 router.get("/dashboard", dashboard)
 
 router.get("/profile", getProfile)
+
+router.post("/notifications", notificationController.sendNotification);
 
 module.exports = router

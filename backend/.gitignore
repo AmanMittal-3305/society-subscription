@@ -1,3 +1,5 @@
 .env*
 
 /node_modules
+
+/config/society-subscription-413ab-firebase-adminsdk-fbsvc-e7db24a12b.json

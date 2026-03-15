@@ -2,229 +2,201 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
+import { motion } from "framer-motion"
+import { Calendar, Wallet, CheckCircle, CreditCard, Banknote, ChevronDown } from "lucide-react"
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
-export default function PaymentEntryPage(){
+const paymentModes = [
+  { value: "CASH", label: "Cash", icon: Banknote },
+  { value: "UPI", label: "UPI", icon: Wallet },
+  { value: "NEFT", label: "NEFT", icon: CreditCard },
+  { value: "CHEQUE", label: "Cheque", icon: CreditCard },
+  { value: "ONLINE", label: "Online", icon: CreditCard },
+]
 
-  const [records,setRecords] = useState<any[]>([])
-  const [selectedRecord,setSelectedRecord] = useState<any>(null)
-
-  const [month,setMonth] = useState(new Date())
-
-  const [form,setForm] = useState({
-    record_id:"",
-    // amount_paid:"",
-    payment_mode:"CASH",
-    payment_source:"OFFLINE",
-    transaction_id:""
+export default function PaymentEntryPage() {
+  const [records, setRecords] = useState<any[]>([])
+  const [selectedRecord, setSelectedRecord] = useState<any>(null)
+  const [month, setMonth] = useState(() => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
   })
+  const [form, setForm] = useState({
+    record_id: "",
+    payment_mode: "CASH",
+    payment_source: "OFFLINE",
+    transaction_id: ""
+  })
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState("")
 
-
-  const fetchRecords = async()=>{
-
-    try{
-
+  const fetchRecords = async () => {
+    try {
       const token = localStorage.getItem("token")
-
-      const formattedMonth =
-        month.getFullYear() +
-        "-" +
-        String(month.getMonth()+1).padStart(2,"0") +
-        "-01"
-
-      const res = await axios.get(
-        `${API}/api/admin/payment-entry`,
-        {
-          params:{ month: formattedMonth },
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        }
-      )
-
-      setRecords(res.data)
-
-    }catch(err){
-      console.log(err)
-    }
-
-  }
-
-
-  useEffect(()=>{
-    fetchRecords()
-  },[month])
-
-
-
-  const handleFlatChange = (record_id:string)=>{
-
-    const record = records.find(r => r.record_id === record_id)
-
-    setSelectedRecord(record)
-
-    setForm({
-      ...form,
-      record_id:record_id,
-      // amount_paid:record.amount
-    })
-
-  }
-
-
-
-  const handleSubmit = async(e:any)=>{
-
-    e.preventDefault()
-
-    try{
-
-      const token = localStorage.getItem("token")
-
-      await axios.post(
-        `${API}/api/admin/payment-entry`,
-        form,
-        {
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        }
-      )
-
-      alert("Payment recorded")
-
-      setSelectedRecord(null)
-
-      setForm({
-        record_id:"",
-        // amount_paid:"",
-        payment_mode:"CASH",
-        payment_source:"OFFLINE",
-        transaction_id:""
+      const res = await axios.get(`${API}/api/admin/payment-entry`, {
+        params: { month: month + "-01" },
+        headers: { Authorization: `Bearer ${token}` }
       })
-
-      fetchRecords()
-
-    }catch(err){
+      setRecords(res.data)
+    } catch (err) {
       console.log(err)
-      alert("Payment failed")
     }
-
   }
 
+  useEffect(() => { fetchRecords() }, [month])
 
+  const handleFlatChange = (record_id: string) => {
+    const record = records.find(r => r.record_id === record_id)
+    setSelectedRecord(record)
+    setForm({ ...form, record_id: record_id })
+  }
 
-  return(
+  const handleSubmit = async (e: any) => {
+    e.preventDefault()
+    setError("")
+    try {
+      const token = localStorage.getItem("token")
+      await axios.post(`${API}/api/admin/payment-entry`, form, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setSuccess(true)
+      setSelectedRecord(null)
+      setForm({ record_id: "", payment_mode: "CASH", payment_source: "OFFLINE", transaction_id: "" })
+      fetchRecords()
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Payment failed")
+    }
+  }
 
-    <div style={{padding:"40px"}}>
-
-      <h2>Manual Payment Entry</h2>
-
-      <div style={{marginBottom:"20px"}}>
-
-        <label>Select Month</label>
-
-        <br/>
-
-        <DatePicker
-          selected={month}
-          onChange={(date:any)=>setMonth(date)}
-          dateFormat="MMMM yyyy"
-          showMonthYearPicker
-        />
-
+  return (
+    <div className="p-8 max-w-4xl mx-auto space-y-8 min-h-screen bg-slate-50">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Manual Payment Entry</h1>
+        <p className="text-slate-500 mt-1">Record offline payments for pending subscriptions</p>
       </div>
 
+      {/* Success Toast */}
+      {success && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl"
+        >
+          <CheckCircle className="w-5 h-5" />
+          <span className="font-medium">Payment recorded successfully!</span>
+        </motion.div>
+      )}
 
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-600 px-5 py-4 rounded-2xl text-sm font-medium">
+          {error}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit}>
-
+      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6">
+        {/* Month Selector */}
         <div>
-
-          <label>Select Flat</label>
-
-          <select
-            required
-            value={form.record_id}
-            onChange={(e)=>handleFlatChange(e.target.value)}
-          >
-
-            <option value="">Select Flat</option>
-
-            {records.map((r)=>(
-              <option key={r.record_id} value={r.record_id}>
-                Flat {r.flat_number}
-              </option>
-            ))}
-
-          </select>
-
+          <label className="text-sm font-semibold text-slate-700 mb-2 block flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-indigo-500" />
+            Billing Month
+          </label>
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+          />
         </div>
 
-
-
-        {selectedRecord && (
-
-          <div style={{marginTop:"10px"}}>
-
-            Amount Due: ₹{selectedRecord.amount}
-
+        {/* Flat Selector */}
+        <div>
+          <label className="text-sm font-semibold text-slate-700 mb-2 block">Select Flat (Pending Only)</label>
+          <div className="relative">
+            <select
+              required
+              value={form.record_id}
+              onChange={(e) => handleFlatChange(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none transition-all"
+            >
+              <option value="">Choose a flat...</option>
+              {records.map((r) => (
+                <option key={r.record_id} value={r.record_id}>
+                  Flat {r.flat_number} — {r.flat_type} — ₹{r.amount}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
+        </div>
 
+        {/* Amount Display */}
+        {selectedRecord && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-center justify-between"
+          >
+            <div>
+              <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wider">Amount Due</p>
+              <p className="text-2xl font-bold text-indigo-900 mt-1">₹{parseFloat(selectedRecord.amount).toLocaleString()}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Flat</p>
+              <p className="text-lg font-bold text-slate-900 mt-1">{selectedRecord.flat_number}</p>
+            </div>
+          </motion.div>
         )}
 
-
-
-
-        <div style={{marginTop:"10px"}}>
-
-          <label>Payment Mode</label>
-
-          <select
-            value={form.payment_mode}
-            onChange={(e)=>setForm({...form,payment_mode:e.target.value})}
-          >
-
-            <option value="CASH">Cash</option>
-            <option value="UPI">UPI</option>
-            <option value="NEFT">NEFT</option>
-            <option value="CHEQUE">Cheque</option>
-            <option value="ONLINE">Online</option>
-
-          </select>
-
+        {/* Payment Mode */}
+        <div>
+          <label className="text-sm font-semibold text-slate-700 mb-3 block">Payment Mode</label>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {paymentModes.map((mode) => {
+              const Icon = mode.icon
+              const isSelected = form.payment_mode === mode.value
+              return (
+                <button
+                  type="button"
+                  key={mode.value}
+                  onClick={() => setForm({ ...form, payment_mode: mode.value })}
+                  className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border text-xs font-semibold transition-all ${isSelected
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700 shadow-sm"
+                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {mode.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
-
-
-        <div style={{marginTop:"10px"}}>
-
-          <label>Transaction ID</label>
-
+        {/* Transaction ID */}
+        <div>
+          <label className="text-sm font-semibold text-slate-700 mb-2 block">Transaction ID (optional)</label>
           <input
             type="text"
             value={form.transaction_id}
-            onChange={(e)=>setForm({...form,transaction_id:e.target.value})}
+            onChange={(e) => setForm({ ...form, transaction_id: e.target.value })}
+            placeholder="e.g. TXN12345678"
+            className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
-
         </div>
 
-
-
+        {/* Submit */}
         <button
           type="submit"
-          style={{marginTop:"20px"}}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-semibold transition-colors shadow-lg shadow-indigo-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
         >
+          <Wallet className="w-5 h-5" />
           Record Payment
         </button>
-
       </form>
-
     </div>
-
   )
-
 }

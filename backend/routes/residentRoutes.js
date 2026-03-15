@@ -1,3 +1,4 @@
+
 const express = require("express")
 const router = express.Router()
 
@@ -5,6 +6,10 @@ const dashboardController = require("../controllers/residentDashboardController"
 const authMiddleware = require("../middleware/authMiddleWare");
 const paymentController = require("../controllers/paymentController")
 const adminController = require("../controllers/adminProfileContoller")
+const residentOnly = require("../middleware/residentMiddleware")
+
+router.use(authMiddleware)
+router.use(residentOnly)
 
 // router.get("/login", (req, res) => {
 //     res.status(201).json({
@@ -14,13 +19,11 @@ const adminController = require("../controllers/adminProfileContoller")
 
 router.get(
     "/dashboard",
-    authMiddleware,
     dashboardController.getDashboard
 );
 
 router.get(
     "/profile",
-    authMiddleware,
     adminController.getProfile
 )
 
@@ -28,14 +31,12 @@ router.put("/profile", authMiddleware, adminController.updateProfile);
 
 router.post(
     "/pay-now",
-    authMiddleware,
     paymentController.payNow
 )
 
 router.get(
-  "/pending-payments",
-  authMiddleware,
-  paymentController.getPendingPayments
+    "/pending-payments",
+    paymentController.getPendingPayments
 );
 
 module.exports = router;

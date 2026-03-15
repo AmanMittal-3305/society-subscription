@@ -1,16 +1,24 @@
-import type { Metadata } from "next";
-import AdminSidebar from "@/components/AdminSidebar";
+"use client";
 
-export const metadata: Metadata = {
-    title: "Admin Dashboard - SocietyHub",
-    description: "Manage your society seamlessly",
-};
+import AdminSidebar from "@/components/AdminSidebar";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const router = useRouter();
+
+    useEffect(() => {
+        const role = localStorage.getItem("role");
+
+        if (role !== "ADMIN") {
+            router.push("/login");
+        }
+    }, [router]);
+
     return (
         <div className="flex bg-slate-50 min-h-screen font-sans">
             <AdminSidebar />

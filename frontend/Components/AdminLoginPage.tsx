@@ -3,71 +3,110 @@
 import { useState } from "react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { Mail, Lock, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
 
-export default function AdminLoginPage(){
-
+export default function AdminLoginPage() {
   const router = useRouter()
 
-  const [email,setEmail] = useState("")
-  const [password,setPassword] = useState("")
-  const [error,setError] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const role = "ADMIN"
 
-  const handleSubmit = async (e:any)=>{
+  const handleSubmit = async (e: any) => {
     e.preventDefault()
+    setLoading(true)
+    setError("")
 
-    try{
-
+    try {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-        {email,password,role}
+        { email, password, role }
       )
 
-      if(res.data.success){
-
-        localStorage.setItem("token",res.data.token)
-        localStorage.setItem("role",res.data.role)
-
-        router.push("/admin/dashboard")
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token)
+        localStorage.setItem("role", res.data.role)
+        router.replace("/admin/dashboard")
       }
-
-    }catch(err:any){
+    } catch (err: any) {
       setError(err.response?.data?.message || "Login failed")
+    } finally {
+      setLoading(false)
     }
-
   }
 
-  return(
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.4 }}
+      className="space-y-5"
+    >
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldCheck className="w-5 h-5 text-indigo-600" />
+          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Admin Portal</span>
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Sign In</h2>
+        <p className="text-slate-500 text-sm mt-1">Access the society management dashboard</p>
+      </div>
 
-    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl text-sm font-medium"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
+        </motion.div>
+      )}
 
-      <h2 className="text-2xl font-semibold">Admin Login</h2>
+      <div className="space-y-4">
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <input
+            type="email"
+            placeholder="Admin email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+          />
+        </div>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e)=>setEmail(e.target.value)}
-        className="border p-2 w-full rounded"
-      />
+        <div className="relative">
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+          />
+        </div>
+      </div>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e)=>setPassword(e.target.value)}
-        className="border p-2 w-full rounded"
-      />
-
-      {error && <p className="text-red-500">{error}</p>}
-
-      <button className="bg-blue-600 text-white w-full py-2 rounded">
-        Login
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-slate-900/25 hover:shadow-slate-900/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60"
+      >
+        {loading ? (
+          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <>
+            Access Dashboard
+            <ArrowRight className="w-4 h-4" />
+          </>
+        )}
       </button>
-
-    </form>
-
+    </motion.form>
   )
-
 }

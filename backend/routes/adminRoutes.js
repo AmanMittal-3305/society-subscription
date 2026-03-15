@@ -3,71 +3,47 @@ const router = express.Router()
 
 const adminController = require("../controllers/adminController")
 const flatController = require("../controllers/flatController")
-const subscriptionController = require('../controllers/subscriptionController')
-const { getProfile } = require("../controllers/adminProfileContoller");
-const authMiddleware = require("../middleware/authMiddleWare");
-const monthlyRecordController = require('../controllers/monthlyRecordController')
+const subscriptionController = require("../controllers/subscriptionController")
+const { getProfile } = require("../controllers/adminProfileContoller")
+const authMiddleware = require("../middleware/authMiddleWare")
+const monthlyRecordController = require("../controllers/monthlyRecordController")
 const paymentController = require("../controllers/paymentController")
 const reportController = require("../controllers/reportController")
-const {dashboard} =  require("../controllers/dashboardController")
+const { dashboard } = require("../controllers/dashboardController")
+const adminOnly = require("../middleware/adminMiddleware")
 
-// router.post("/register", adminController.register)
-// router.post("/login", adminController.login)
+router.use(authMiddleware)
+router.use(adminOnly)
 
+router.post("/generate-bills", adminController.generateBills)
+router.post("/payment/manual", adminController.manualPayment)
 
-// router.get("/monthly-records", adminController.getMonthlyRecords);
-// router.post("/monthly-records/generate", adminController.generateMonthlyRecords);
-
-router.post("/generate-bills", adminController.generateBills);
-router.post("/payment/manual", adminController.manualPayment);
-
-router.get("/flats", authMiddleware, flatController.getFlats)
-router.post("/flats", authMiddleware, flatController.createFlat)
+router.get("/flats", flatController.getFlats)
+router.post("/flats", flatController.createFlat)
 router.get("/flats/available-residents", flatController.getAvailableResidents)
 router.put("/flats/:id/assign-resident", flatController.assignResident)
-router.get("/flats/:id", authMiddleware, flatController.getFlatById)
-router.post("/flats/:id/register-resident", authMiddleware, flatController.registerResident)
-router.put("/flats/:id", authMiddleware, flatController.updateFlat)
-router.delete("/flats/:id", authMiddleware, flatController.deleteFlat)
+router.get("/flats/:id", flatController.getFlatById)
+router.post("/flats/:id/register-resident", flatController.registerResident)
+router.put("/flats/:id", flatController.updateFlat)
+router.delete("/flats/:id", flatController.deleteFlat)
 
-router.get("/subscriptions", authMiddleware, subscriptionController.getPlans)
+router.get("/subscriptions", subscriptionController.getPlans)
+router.get("/subscriptions/:id", subscriptionController.getPlanById)
+router.post("/subscriptions", subscriptionController.createPlan)
+router.put("/subscriptions/:id", subscriptionController.updatePlan)
+router.delete("/subscriptions/:id", subscriptionController.deletePlan)
 
-router.get("/subscriptions/:id", authMiddleware, subscriptionController.getPlanById)
+router.get("/monthly-records", monthlyRecordController.getRecords)
 
-router.post("/subscriptions", authMiddleware, subscriptionController.createPlan)
+router.put("/monthly-records/:record_id/mark-paid", monthlyRecordController.markPaid)
 
-router.put("/subscriptions/:id", authMiddleware, subscriptionController.updatePlan)
+router.get("/payment-entry", paymentController.getPaymentEntry)
+router.post("/payment-entry", paymentController.createPaymentEntry)
 
-router.delete("/subscriptions/:id", authMiddleware, subscriptionController.deletePlan)
+router.get("/reports/monthly", reportController.getMonthlyReport)
 
+router.get("/dashboard", dashboard)
 
-router.get("/monthly-records", authMiddleware, monthlyRecordController.getRecords)
-
-router.put(
-  "/monthly-records/:record_id/mark-paid",
-  authMiddleware,
-  monthlyRecordController.markPaid
-)
-
-router.get(
-  "/payment-entry",
-  authMiddleware,
-  paymentController.getPaymentEntry
-)
-
-router.post(
-  "/payment-entry",
-  authMiddleware,
-  paymentController.createPaymentEntry
-)
-
-router.get("/reports/monthly", authMiddleware, reportController.getMonthlyReport)
-
-
-router.get("/dashboard", authMiddleware, dashboard)
-
-
-
-router.get("/profile", authMiddleware, getProfile);
+router.get("/profile", getProfile)
 
 module.exports = router

@@ -1,16 +1,24 @@
-import type { Metadata } from "next";
-import ResidentSidebar from "@/components/ResidentSidebar";
+"use client";
 
-export const metadata: Metadata = {
-    title: "Resident Dashboard - SocietyHub",
-    description: "Manage your society seamlessly",
-};
+import ResidentSidebar from "@/components/ResidentSidebar";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ResidentLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const router = useRouter();
+
+    useEffect(() => {
+        const role = localStorage.getItem("role");
+
+        if (role !== "RESIDENT") {
+            router.push("/login");
+        }
+    }, [router]);
+
     return (
         <div className="flex bg-slate-50 min-h-screen font-sans">
             <ResidentSidebar />

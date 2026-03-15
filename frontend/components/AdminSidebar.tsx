@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,28 +14,34 @@ import {
     Bell,
     LogOut,
     Menu,
-    X
+    X,
+    Wallet
 } from "lucide-react";
 
 const navItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: Home },
-    { name: "Admin Profile", href: "/admin/profile", icon: User },
     { name: "All Flats", href: "/admin/flats", icon: Building },
     { name: "Subscriptions", href: "/admin/subscription", icon: CreditCard },
     { name: "Monthly Records", href: "/admin/monthly-records", icon: CalendarDays },
-    { name: "Payment Entry", href: "/admin/payment-entry", icon: CreditCard },
+    { name: "Payment Entry", href: "/admin/payment-entry", icon: Wallet },
     { name: "Reports", href: "/admin/report", icon: FileText },
     { name: "Notifications", href: "/admin/notification", icon: Bell },
 ];
 
 export default function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
 
-    // Close sidebar on mobile when route changes
     useEffect(() => {
         setIsOpen(false);
     }, [pathname]);
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        router.replace("/login");
+    };
 
     const SidebarContent = () => (
         <>
@@ -53,7 +59,7 @@ export default function AdminSidebar() {
 
             <div className="flex-1 overflow-y-auto py-6 px-4 no-scrollbar">
                 <div className="space-y-1.5">
-                    <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 mt-4 first:mt-0">Menu</p>
+                    <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Menu</p>
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || (pathname?.startsWith(item.href + "/") && item.href !== "/admin");
                         const Icon = item.icon;
@@ -83,11 +89,35 @@ export default function AdminSidebar() {
                             </Link>
                         );
                     })}
+
+                    <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 mt-8">Account</p>
+                    <Link href="/admin/profile" className="block relative">
+                        {pathname === "/admin/profile" && (
+                            <motion.div
+                                layoutId="activeTabAccount"
+                                className="absolute inset-0 bg-indigo-500/10 rounded-xl border border-indigo-500/20"
+                                initial={false}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                        <div
+                            className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 z-10 group ${pathname === "/admin/profile"
+                                ? "text-indigo-400 font-medium"
+                                : "hover:bg-slate-800/50 hover:text-white"
+                                }`}
+                        >
+                            <User className={`w-5 h-5 transition-colors ${pathname === "/admin/profile" ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-300"}`} />
+                            <span className="text-[15px]">Admin Profile</span>
+                        </div>
+                    </Link>
                 </div>
             </div>
 
             <div className="p-4 border-t border-slate-800 shrink-0">
-                <button className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl hover:bg-slate-800/50 text-slate-400 hover:text-white transition-all duration-200 group">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl hover:bg-slate-800/50 text-slate-400 hover:text-white transition-all duration-200 group"
+                >
                     <LogOut className="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
                     <span className="text-[15px] font-medium group-hover:text-amber-400 transition-colors">Logout</span>
                 </button>

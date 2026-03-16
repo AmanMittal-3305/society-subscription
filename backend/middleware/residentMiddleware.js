@@ -3,6 +3,9 @@ const residentOnly = (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized" })
   }
 
+  
+  
+
   if (req.user.role !== "RESIDENT") {
     return res.status(403).json({ message: "Resident access only" })
   }

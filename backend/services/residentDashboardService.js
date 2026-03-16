@@ -16,8 +16,16 @@ const getResidentDashboard = async (residentId) => {
     );
 
     if (flatRes.rows.length === 0) {
-      return null;
-    }
+  return {
+    flat: null,
+    currentRecordId: null,
+    currentMonth: null,
+    paidAmount: 0,
+    pendingAmount: 0,
+    paymentHistory: [],
+    notifications: []
+  };
+}
 
     const flat = flatRes.rows[0];
 

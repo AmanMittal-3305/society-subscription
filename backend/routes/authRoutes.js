@@ -31,8 +31,9 @@ router.get(
       { expiresIn: "1d" }
     );
 
-    res.redirect(`http://localhost:3000/admin/oauth-success?token=${token}`);
+    res.redirect(`http://localhost:3000/oauth-success?token=${token}`);
   }
 );
+
 
 module.exports = router

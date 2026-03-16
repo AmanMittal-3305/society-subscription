@@ -31,7 +31,7 @@ passport.use(
           (email, full_name, auth0_id, role)
           VALUES ($1, $2, $3, $4)
           RETURNING *`,
-          [email, fullName, auth0_id, "ADMIN"]
+          [email, fullName, auth0_id, "RESIDENT"]
         );
 
         return done(null, newUser.rows[0]);

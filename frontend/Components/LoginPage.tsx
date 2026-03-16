@@ -90,6 +90,16 @@ export default function LoginPage() {
       </div>
 
       <button
+        type="button"
+        onClick={() =>
+          window.location.href = "http://localhost:5000/api/auth/google"
+        }
+        className="w-full bg-blue-500 text-white py-3.5 rounded-xl font-semibold"
+      >
+        Login with Google
+      </button>
+
+      <button
         type="submit"
         disabled={loading}
         className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60"

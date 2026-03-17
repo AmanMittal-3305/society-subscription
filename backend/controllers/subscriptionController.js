@@ -49,16 +49,15 @@ const createPlan = async (req,res)=>{
 const updatePlan = async (req,res)=>{
 
   const plan = await subscriptionService.updatePlan(
-
     req.user.user_id,
-
     req.params.id,
-
     req.body
-
   )
 
-  res.json(plan)
+  res.json({
+    message:"Plan updated successfully",
+    plan
+  })
 }
 
 // DELETE

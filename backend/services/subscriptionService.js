@@ -59,14 +59,29 @@ const updatePlan = async (
   { monthly_rate }
 ) => {
 
+  const today = new Date()
+
+  const nextMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+  )
+
   const result = await pool.query(
-    `UPDATE subscription_plans
-     SET monthly_rate=$1,
-         updated_at=CURRENT_TIMESTAMP
-     WHERE plan_id=$2
-     AND admin_id=$3
-     RETURNING *`,
-    [monthly_rate, plan_id, admin_id]
+    `
+    UPDATE subscription_plans
+    SET monthly_rate = $1,
+        effective_from = $2,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE plan_id = $3
+      AND admin_id = $4
+    RETURNING *
+    `,
+    [
+      monthly_rate,
+      nextMonth,
+      plan_id,
+      admin_id
+    ]
   )
 
   return result.rows[0]

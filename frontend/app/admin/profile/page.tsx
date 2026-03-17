@@ -61,9 +61,7 @@ export default function AdminProfile() {
   ];
 
   const adminInfo = [
-    { label: "Role", value: user.role, icon: ShieldCheck, highlight: true },
-    { label: "Location", value: "HQ", icon: MapPin },
-    { label: "Department", value: "Management", icon: Building },
+    { label: "Role", value: user.role, icon: ShieldCheck, highlight: true }
   ];
 
   
@@ -188,11 +186,6 @@ export default function AdminProfile() {
                           <p className={`text-sm font-bold mt-0.5 ${info.highlight ? 'text-emerald-600 uppercase tracking-wide' : 'text-slate-900'}`}>{info.value}</p>
                         </div>
                       </div>
-                      {info.highlight && (
-                        <div className="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200">
-                          Verified
-                        </div>
-                      )}
                     </div>
                   );
                 })}

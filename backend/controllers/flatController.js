@@ -5,7 +5,10 @@ const getFlats = async (req, res) => {
 
     const adminId = req.user.user_id
 
-    const flats = await flatService.getAllFlats(adminId)
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+
+    const flats = await flatService.getAllFlats(adminId, page, limit)
 
     res.json(flats)
 

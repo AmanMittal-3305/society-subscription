@@ -33,41 +33,69 @@ const markAsPaid = async (record_id, admin_id) => {
   try {
     await client.query("BEGIN");
 
-    // Fetch record
     const recordRes = await client.query(
-      `SELECT mr.*, f.admin_id FROM monthly_records mr
-       JOIN flats f ON mr.flat_id = f.flat_id
-       WHERE mr.record_id = $1`,
+      `
+      SELECT mr.*, f.admin_id
+      FROM monthly_records mr
+      JOIN flats f ON mr.flat_id = f.flat_id
+      WHERE mr.record_id = $1
+      `,
       [record_id]
     );
 
-    if (!recordRes.rows.length) throw new Error("Record not found");
+    if (!recordRes.rows.length) {
+      throw new Error("Record not found");
+    }
 
     const record = recordRes.rows[0];
 
-    if (record.status === "PAID") throw new Error("Already paid");
-    if (record.admin_id !== admin_id) throw new Error("Unauthorized");
+    if (record.admin_id !== admin_id) {
+      throw new Error("Unauthorized");
+    }
 
-    // Insert payment
+    if (record.status === "PAID") {
+      throw new Error("Already paid");
+    }
+
+    const existingPayment = await client.query(
+      `SELECT payment_id FROM payments WHERE record_id = $1`,
+      [record_id]
+    );
+
+    if (existingPayment.rows.length) {
+      throw new Error("Payment already exists");
+    }
+
     await client.query(
       `
       INSERT INTO payments
-        (payment_id, record_id, amount_paid, payment_mode, payment_source, transaction_id, recorded_by)
-      VALUES
-        ($1,$2,$3,$4,$5,$6,$7)
+      (payment_id, record_id, amount_paid, payment_mode, payment_source, transaction_id, recorded_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
       `,
-      [uuidv4(), record.record_id, record.amount, "CASH", "OFFLINE", null, admin_id]
+      [
+        uuidv4(),
+        record.record_id,
+        record.amount,
+        "CASH",
+        "OFFLINE",
+        null,
+        admin_id
+      ]
     );
 
-    // Update record status
     await client.query(
-      `UPDATE monthly_records SET status='PAID' WHERE record_id=$1`,
+      `
+      UPDATE monthly_records
+      SET status='PAID'
+      WHERE record_id=$1
+      `,
       [record_id]
     );
 
     await client.query("COMMIT");
 
     return { message: "Payment recorded successfully" };
+
   } catch (err) {
     await client.query("ROLLBACK");
     throw err;

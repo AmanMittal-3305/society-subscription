@@ -32,19 +32,28 @@ export default function FlatsPage() {
   const [newResidentEmail, setNewResidentEmail] = useState("")
   const [newResidentPhone, setNewResidentPhone] = useState("")
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
   const fetchFlats = async () => {
     try {
       const token = localStorage.getItem("token")
 
-      const res = await axios.get(`${API}/api/admin/flats`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const res = await axios.get(
+        `${API}/api/admin/flats?page=${page}&limit=5`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      })
+      )
 
-      setFlats(res.data)
+      setFlats(res.data.flats || [])
+      setTotalPages(res.data.totalPages || 1)
+
     } catch (err) {
       console.error(err)
+      setFlats([])
     }
   }
 
@@ -66,7 +75,7 @@ export default function FlatsPage() {
 
   useEffect(() => {
     fetchFlats()
-  }, [])
+  }, [page])
 
   const saveFlat = async () => {
     try {
@@ -446,6 +455,30 @@ export default function FlatsPage() {
 
         </div>
       )}
+
+      <div className="flex justify-center gap-3 mt-6">
+
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        <span className="px-4 py-2">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+
+      </div>
 
     </div>
   )

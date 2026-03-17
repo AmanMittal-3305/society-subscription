@@ -1,7 +1,8 @@
 const pool = require("../config/db")
 const { v4: uuidv4 } = require("uuid")
 
-const getAllFlats = async (adminId) => {
+const getAllFlats = async (adminId, page = 1, limit = 10) => {
+  const offset = (page - 1) * limit
 
   const result = await pool.query(
     `
@@ -18,12 +19,26 @@ const getAllFlats = async (adminId) => {
       ON f.resident_id = u.user_id
     WHERE f.admin_id = $1
     ORDER BY f.flat_number
+    LIMIT $2 OFFSET $3
+    `,
+    [adminId, limit, offset]
+  )
+
+  const countResult = await pool.query(
+    `
+    SELECT COUNT(*)
+    FROM flats
+    WHERE admin_id = $1
     `,
     [adminId]
   )
 
-  return result.rows
-}
+  return {
+    flats: result.rows,
+    total: parseInt(countResult.rows[0].count),
+    totalPages: Math.ceil(countResult.rows[0].count / limit)
+  }
+} 
 
 // Create a flat + initial monthly record
 const createFlat = async ({ flat_number, owner_name, flat_type, address, admin_id }) => {

@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { getToken } from "firebase/messaging";
+import { messaging } from "@/lib/firebase";
 import axios from "axios";
 import Link from "next/link";
 

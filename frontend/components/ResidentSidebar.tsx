@@ -11,13 +11,15 @@ import {
     Wallet,
     LogOut,
     Menu,
-    X
+    X, 
+    Bell
 } from "lucide-react";
 
 const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
     { name: "Pay Now", href: "/pay-now", icon: Wallet },
+    { name : "Notifications", href : "/notification", icon : Bell}
 ];
 
 export default function ResidentSidebar() {

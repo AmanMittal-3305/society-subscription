@@ -7,8 +7,8 @@ const authMiddleware = require("../middleware/authMiddleWare");
 const paymentController = require("../controllers/paymentController")
 const adminController = require("../controllers/adminProfileContoller")
 const residentOnly = require("../middleware/residentMiddleware")
-const notificationController = require("../controllers/notificationController")
 const residentSubscriptionController = require("../controllers/residentSubscriptionController")
+const notificationController = require("../controllers/residentNotificationController")
 
 router.use(authMiddleware)
 router.use(residentOnly)
@@ -23,7 +23,7 @@ router.get("/subscriptions/:id", residentSubscriptionController.getSubscriptionD
 router.post("/pay-now", paymentController.payNow)
 router.get("/pending-payments", paymentController.getPendingPayments)
 
-router.get("/notifications", notificationController.getNotifications)
-router.post("/notifications/:id/read", notificationController.markAsRead)
+router.get("/notifications", notificationController.getNotifications);
+router.put("/save-token", notificationController.saveFCMToken);
 
 module.exports = router;

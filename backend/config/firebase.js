@@ -42,7 +42,4 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const db = admin.firestore();
-const messaging = admin.messaging();
-
-module.exports = { db, messaging };
+module.exports = admin;

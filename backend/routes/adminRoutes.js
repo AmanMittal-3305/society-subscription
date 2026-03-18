@@ -12,6 +12,7 @@ const reportController = require("../controllers/reportController")
 const { dashboard } = require("../controllers/dashboardController")
 const adminOnly = require("../middleware/adminMiddleware")
 const notificationController = require("../controllers/notificationController")
+// const FireBaseController = require("../controllers/notificationController")
 
 router.use(authMiddleware)
 router.use(adminOnly)
@@ -47,6 +48,8 @@ router.get("/dashboard", dashboard)
 
 router.get("/profile", getProfile)
 
+// router.post("/notifications", notificationController.sendNotification);
+router.get("/notifications", notificationController.getNotifications);
 router.post("/notifications", notificationController.sendNotification);
 
 module.exports = router

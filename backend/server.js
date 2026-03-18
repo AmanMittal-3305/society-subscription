@@ -4,6 +4,7 @@ require("dotenv").config();
 const session = require("express-session");
 const passport = require("./config/passport");
 const bcrypt = require("bcrypt");
+// require("./cron/monthlyNotification");
 
 const pool = require("./config/db"); // PostgreSQL pool
 
@@ -24,12 +25,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: "http://localhost:3000",
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders: ["Content-Type","Authorization"]
+}))
 
 app.use(express.json());
 

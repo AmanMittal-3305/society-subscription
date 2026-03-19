@@ -54,7 +54,7 @@ export default function NotificationPage() {
     try {
       const token = localStorage.getItem("token")
 
-      const res = await axios.get(`${API}/api/admin/flats/available-residents`, {
+      const res = await axios.get(`${API}/api/admin/residents`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -70,6 +70,8 @@ export default function NotificationPage() {
   useEffect(() => {
     fetchNotifications()
     fetchResidents()
+    const interval = setInterval(fetchNotifications, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const sendNotification = async () => {
@@ -278,11 +280,10 @@ export default function NotificationPage() {
                           recipient_ids: [],
                         })
                       }
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${
-                        form.send_to_all
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${form.send_to_all
                           ? "bg-indigo-50 border-indigo-300 text-indigo-700"
                           : "bg-white border-slate-200 text-slate-500"
-                      }`}
+                        }`}
                     >
                       <Users className="w-4 h-4" />
                       All Residents
@@ -296,11 +297,10 @@ export default function NotificationPage() {
                           send_to_all: false,
                         })
                       }
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${
-                        !form.send_to_all
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${!form.send_to_all
                           ? "bg-indigo-50 border-indigo-300 text-indigo-700"
                           : "bg-white border-slate-200 text-slate-500"
-                      }`}
+                        }`}
                     >
                       <User className="w-4 h-4" />
                       Specific

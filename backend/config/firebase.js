@@ -36,7 +36,7 @@
 
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./society-subscription-413ab-firebase-adminsdk-fbsvc-e7db24a12b.json");
+const serviceAccount = require("./society-subscription-413ab-firebase-adminsdk-fbsvc-e4045bc903.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

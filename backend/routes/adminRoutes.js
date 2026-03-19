@@ -52,4 +52,6 @@ router.get("/profile", getProfile)
 router.get("/notifications", notificationController.getNotifications);
 router.post("/notifications", notificationController.sendNotification);
 
+router.get("/residents", notificationController .getAllResidents)
+
 module.exports = router

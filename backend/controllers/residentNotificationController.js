@@ -51,7 +51,50 @@ const getNotifications = async (req, res) => {
   }
 };
 
+const unreadNotifications = async (req, res) => {
+  try {
+    const residentId = req.user.user_id;
+
+    const result = await pool.query(`
+      SELECT COUNT(*) 
+      FROM notifications
+      WHERE recipient_id = $1
+      AND is_read = false
+    `, [residentId]);
+
+    res.json({
+      unread: Number(result.rows[0].count)
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false });
+  }
+};
+
+const readNotifications = async (req, res) => {
+  try {
+    const residentId = req.user.user_id;
+
+    await pool.query(`
+      UPDATE notifications
+      SET is_read = true
+      WHERE recipient_id = $1
+    `, [residentId]);
+
+    res.json({
+      success: true
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false });
+  }
+};
+
 module.exports = {
   saveFCMToken,
-  getNotifications
+  getNotifications,
+  unreadNotifications,
+  readNotifications
 };

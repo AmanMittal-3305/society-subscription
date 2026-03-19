@@ -1,4 +1,3 @@
-
 const express = require("express")
 const router = express.Router()
 
@@ -25,5 +24,9 @@ router.get("/pending-payments", paymentController.getPendingPayments)
 
 router.get("/notifications", notificationController.getNotifications);
 router.put("/save-token", notificationController.saveFCMToken);
+
+router.get("/notifications/unread", notificationController.unreadNotifications);
+
+router.put("/notifications/read", notificationController.readNotifications );
 
 module.exports = router;

@@ -84,25 +84,62 @@ const getNotifications = async (req, res) => {
         n.batch_id,
         n.title,
         n.message,
-        n.sent_at,
+        MAX(n.sent_at) AS sent_at,
         STRING_AGG(u.full_name, ', ') AS recipients
       FROM notifications n
       LEFT JOIN users u ON n.recipient_id = u.user_id
-      GROUP BY n.batch_id, n.title, n.message, n.sent_at
-      ORDER BY n.sent_at DESC
+      GROUP BY n.batch_id, n.title, n.message
+      ORDER BY MAX(n.sent_at) DESC
     `);
 
-    res.json(result.rows);
+    const formatted = result.rows.map((row) => {
+      const names = row.recipients.split(",").map(name => name.trim())
+
+      let shortRecipients = ""
+
+      if (names.length <= 2) {
+        shortRecipients = names.join(", ")
+      } else {
+        shortRecipients = `${names[0]}, ${names[1]} + ${names.length - 2} others`
+      }
+
+      return {
+        ...row,
+        recipients: shortRecipients
+      }
+    })
+
+    res.json(formatted)
 
   } catch (e) {
-    console.error(e);
+    console.error(e)
     res.status(500).json({
       success: false
-    });
+    })
   }
-};
+}
+
+const getAllResidents = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT user_id, full_name
+      FROM users
+      WHERE role = 'RESIDENT'
+      ORDER BY full_name
+    `)
+
+    res.json(result.rows)
+
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({
+      success: false
+    })
+  }
+}
 
 module.exports = {
   sendNotification,
-  getNotifications
+  getNotifications,
+  getAllResidents
 };

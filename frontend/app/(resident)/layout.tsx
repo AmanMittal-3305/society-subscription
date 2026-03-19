@@ -42,7 +42,7 @@ export default function ResidentLayout({ children }: { children: React.ReactNode
       // Get FCM token
       const fcmToken = await getToken(messaging, {
         vapidKey:
-          "BCHzVajWdPEHQOOglEH_OKIJRAitQ6qVGIPn1gkk-6gx24_pMkLfw1bk7mDvUUrugxAUbwP__lf6Z9xt7R71Tg4",
+          process.env.NEXT_PUBLIC_VAPID_KEY,
       });
 
       if (fcmToken) {

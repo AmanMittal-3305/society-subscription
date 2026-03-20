@@ -1,5 +1,5 @@
 import Link from "next/link"
-import LoginPage from "@/Components/LoginPage"
+import LoginPage from "@/components/LoginPage"
 
 export default function Page() {
   return (

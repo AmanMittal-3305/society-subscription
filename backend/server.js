@@ -4,7 +4,6 @@ require("dotenv").config();
 const session = require("express-session");
 const passport = require("./config/passport");
 const bcrypt = require("bcrypt");
-// require("./cron/monthlyNotification");
 
 const pool = require("./config/db"); // PostgreSQL pool
 

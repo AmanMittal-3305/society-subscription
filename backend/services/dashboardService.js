@@ -44,6 +44,7 @@ const getDashboardData = async (admin_id) => {
     JOIN flats f ON f.flat_id = mr.flat_id
     WHERE mr.status='PENDING'
     AND f.admin_id=$1
+    AND f.resident_id IS NOT NULL
     `,
     [admin_id]
   )
@@ -80,6 +81,7 @@ const getDashboardData = async (admin_id) => {
     JOIN flats f ON f.flat_id = mr.flat_id
     WHERE mr.status='PAID'
     AND f.admin_id=$1
+    AND f.resident_id IS NOT NULL
     GROUP BY DATE_TRUNC('month', mr.billing_month)
     ORDER BY DATE_TRUNC('month', mr.billing_month)
     LIMIT 6

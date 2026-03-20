@@ -12,9 +12,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
-  console.log("Background message:", payload);
-  self.registration.showNotification(payload.notification.title, {
-    body: payload.notification.body,
-  });
+messaging.onBackgroundMessage((payload) => {
+  console.log("[firebase-messaging-sw.js] Background message received:", payload);
+
+  const notificationTitle = payload.notification?.title || "New Message";
+  const notificationOptions = {
+    body: payload.notification?.body || "You have a new notification",
+    icon: payload.notification?.icon || "/favicon.ico",
+    data: payload.data, // Preserve data for click handling
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });

@@ -1,3 +1,4 @@
+const { log } = require("console");
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
@@ -16,14 +17,12 @@ const authMiddleware = (req, res, next) => {
 
     req.user = decoded;
     console.log(req.user);
-    
-
+    console.log("Token decoded successfully:", req.user);
     next();
 
   } catch (error) {
-
+    console.error("JWT Verification failed:", error.message);
     return res.status(403).json({ message: "Invalid token" });
-
   }
 };
 

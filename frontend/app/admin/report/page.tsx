@@ -76,7 +76,7 @@ export default function ReportsPage() {
     doc.text(`Total Collection: Rs.${report.total_collection}`, 20, y); y += 10
     doc.text(`Pending Amount: Rs.${report.pending_amount}`, 20, y); y += 10
     doc.text(`Paid Flats: ${report.paid_flats}`, 20, y); y += 10
-    doc.text(`Pending Flats: ${report.pending_flats}`, 20, y); y += 15
+    doc.text(`Pending/Unassigned Flats: ${report.pending_flats}`, 20, y); y += 15
     doc.text("Payment Mode Breakdown:", 20, y); y += 10
     report.payment_modes.forEach((m: any) => {
       doc.text(`${m.payment_mode}: Rs.${m.total}`, 20, y); y += 10
@@ -142,7 +142,7 @@ export default function ReportsPage() {
               { title: "Total Collection", value: `₹${parseFloat(report.total_collection || 0).toLocaleString()}`, icon: IndianRupee, color: "emerald" },
               { title: "Pending Amount", value: `₹${parseFloat(report.pending_amount || 0).toLocaleString()}`, icon: Clock, color: "amber" },
               { title: "Paid Flats", value: report.paid_flats || 0, icon: CheckCircle, color: "emerald" },
-              { title: "Pending Flats", value: report.pending_flats || 0, icon: Clock, color: "amber" },
+              { title: "Pending/Unassigned Flats", value: report.pending_flats || 0, icon: Clock, color: "amber" },
             ].map((stat, i) => {
               const Icon = stat.icon
               const isPositive = stat.color === "emerald"

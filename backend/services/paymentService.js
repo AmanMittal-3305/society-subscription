@@ -16,6 +16,7 @@ const getPaymentEntry = async (admin_id, month) => {
   WHERE f.admin_id = $1
   AND DATE_TRUNC('month', mr.billing_month) = DATE_TRUNC('month', $2::date)
   AND mr.status != 'PAID'
+  AND f.resident_id IS NOT NULL
   ORDER BY f.flat_number
   `
 
@@ -42,7 +43,8 @@ const createPaymentEntry = async (data, admin_id) => {
     await client.query("BEGIN")
 
     const recordRes = await client.query(
-      `SELECT amount FROM monthly_records WHERE record_id=$1`,
+      `SELECT amount FROM monthly_records 
+      WHERE record_id=$1`,
       [record_id]
     )
 

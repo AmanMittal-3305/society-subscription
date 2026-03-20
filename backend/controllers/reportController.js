@@ -23,11 +23,13 @@ exports.getMonthlyReport = async (req, res) => {
 
     // Pending amount
     const pendingAmount = await pool.query(
-      `SELECT COALESCE(SUM(amount),0) AS total
-       FROM monthly_records
-       WHERE DATE_TRUNC('month', billing_month)
+      `SELECT COALESCE(SUM(mr.amount),0) AS total
+       FROM monthly_records mr
+       join flats f on mr.flat_id = f.flat_id
+       WHERE DATE_TRUNC('month', mr.billing_month)
        = DATE_TRUNC('month',$1::date)
-       AND status!='PAID'`,
+       AND mr.status!='PAID'
+       AND f.resident_id IS NOT NULL`,
       [formattedMonth]
     );
 

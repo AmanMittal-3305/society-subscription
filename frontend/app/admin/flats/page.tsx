@@ -5,7 +5,8 @@ import axios from "axios"
 import {
   Plus,
   Edit2,
-  Trash2
+  Trash2,
+  Image
 } from "lucide-react"
 
 export default function FlatsPage() {
@@ -28,12 +29,24 @@ export default function FlatsPage() {
   const [residents, setResidents] = useState<any[]>([])
   const [selectedResident, setSelectedResident] = useState("")
 
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [selectedImages, setSelectedImages] = useState<string[]>([])
+  const [currentImage, setCurrentImage] = useState(0)
+
   const [newResidentName, setNewResidentName] = useState("")
   const [newResidentEmail, setNewResidentEmail] = useState("")
   const [newResidentPhone, setNewResidentPhone] = useState("")
 
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+
+  const flatImages = [
+    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
+    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
+    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
+    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
+    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg"
+  ]
 
   const fetchFlats = async () => {
     try {
@@ -215,6 +228,25 @@ export default function FlatsPage() {
     }
   }
 
+  const openImageModal = () => {
+    setSelectedImages(flatImages)
+    setCurrentImage(0)
+    setShowImageModal(true)
+  }
+
+  const nextImage = () => {
+    setCurrentImage((prev) =>
+      prev === selectedImages.length - 1 ? 0 : prev + 1
+    )
+  }
+
+  const prevImage = () => {
+    setCurrentImage((prev) =>
+      prev === 0 ? selectedImages.length - 1 : prev - 1
+    )
+  }
+
+
   const filteredFlats = flats.filter((flat) =>
     flat.flat_number?.toLowerCase().includes(search.toLowerCase())
   )
@@ -297,6 +329,70 @@ export default function FlatsPage() {
         </div>
       )}
 
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+
+          <div className="bg-white p-6 rounded-2xl w-[850px] relative">
+
+            <h2 className="text-2xl font-bold text-center mb-4">
+              Flat Images
+            </h2>
+
+            <div className="relative flex justify-center items-center">
+
+              <button
+                onClick={prevImage}
+                className="absolute left-2 bg-white shadow-lg px-4 py-2 rounded-full text-xl"
+              >
+                ←
+              </button>
+
+              <img
+                src={selectedImages[currentImage]}
+                alt="Flat"
+                className="w-full h-[450px] object-cover rounded-xl"
+              />
+
+              <button
+                onClick={nextImage}
+                className="absolute right-2 bg-white shadow-lg px-4 py-2 rounded-full text-xl"
+              >
+                →
+              </button>
+
+            </div>
+
+            <div className="text-center mt-3 text-gray-500">
+              {currentImage + 1} / {selectedImages.length}
+            </div>
+
+            <div className="flex justify-center gap-3 mt-4 flex-wrap">
+              {selectedImages.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  alt={`Thumbnail ${index}`}
+                  onClick={() => setCurrentImage(index)}
+                  className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${currentImage === index
+                      ? "border-indigo-600"
+                      : "border-gray-300"
+                    }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="mt-5 w-full border py-2 rounded-lg"
+            >
+              Close
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
       <input
         className="border p-2 rounded w-full"
         placeholder="Search flat"
@@ -312,6 +408,7 @@ export default function FlatsPage() {
             <th>Resident</th>
             <th>Type</th>
             <th>Address</th>
+            <th>Images</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -339,6 +436,15 @@ export default function FlatsPage() {
               <td>{flat.flat_type}</td>
               <td>{flat.address}</td>
 
+              <td>
+                <button
+                  onClick={openImageModal}
+                  className="text-indigo-600"
+                >
+                  <Image className="w-5 h-5" />
+                </button>
+              </td>
+
               <td className="flex gap-2 p-4">
                 <button onClick={() => handleEdit(flat)}>
                   <Edit2 className="w-4 h-4" />
@@ -348,6 +454,16 @@ export default function FlatsPage() {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </td>
+
+              {/* <td className="flex gap-2 p-4">
+                <button onClick={() => handleEdit(flat)}>
+                  <Edit2 className="w-4 h-4" />
+                </button>
+
+                <button onClick={() => deleteFlat(flat.flat_id)}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </td> */}
 
             </tr>
           ))}

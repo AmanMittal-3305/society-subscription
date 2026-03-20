@@ -1,7 +1,6 @@
 const express = require("express")
 const router = express.Router()
 
-const adminController = require("../controllers/adminController")
 const flatController = require("../controllers/flatController")
 const subscriptionController = require("../controllers/subscriptionController")
 const { getProfile } = require("../controllers/adminProfileContoller")
@@ -12,13 +11,10 @@ const reportController = require("../controllers/reportController")
 const { dashboard } = require("../controllers/dashboardController")
 const adminOnly = require("../middleware/adminMiddleware")
 const notificationController = require("../controllers/notificationController")
-// const FireBaseController = require("../controllers/notificationController")
 
 router.use(authMiddleware)
 router.use(adminOnly)
 
-router.post("/generate-bills", adminController.generateBills)
-router.post("/payment/manual", adminController.manualPayment)
 
 router.get("/flats", flatController.getFlats)
 router.post("/flats", flatController.createFlat)
@@ -48,7 +44,6 @@ router.get("/dashboard", dashboard)
 
 router.get("/profile", getProfile)
 
-// router.post("/notifications", notificationController.sendNotification);
 router.get("/notifications", notificationController.getNotifications);
 router.post("/notifications", notificationController.sendNotification);
 

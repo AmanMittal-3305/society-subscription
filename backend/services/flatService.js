@@ -61,16 +61,17 @@ const createFlat = async ({ flat_number, owner_name, flat_type, address, admin_i
 
     // 2️⃣ Get the current subscription rate for this flat_type & admin
     const subResult = await client.query(
-      `
-      SELECT monthly_rate
-      FROM subscription_plans
-      WHERE admin_id = $1
-        AND flat_type = $2
-      ORDER BY effective_from DESC
-      LIMIT 1
-      `,
-      [admin_id, flat_type]
-    );
+  `
+  SELECT monthly_rate
+  FROM subscription_plans
+  WHERE admin_id = $1
+    AND flat_type = $2
+    AND effective_from <= DATE_TRUNC('month', CURRENT_DATE)
+  ORDER BY effective_from DESC
+  LIMIT 1
+  `,
+  [admin_id, flat_type]
+)
 
     const monthlyRate = subResult.rows.length > 0 ? subResult.rows[0].monthly_rate : 0;
 

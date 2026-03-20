@@ -17,6 +17,7 @@ const getMonthlyRecords = async (admin_id, month) => {
     FROM monthly_records mr
     JOIN flats f ON mr.flat_id = f.flat_id
     WHERE f.admin_id = $1
+    AND f.resident_id IS NOT NULL
       AND DATE_TRUNC('month', mr.billing_month) = DATE_TRUNC('month', $2::DATE)
     ORDER BY f.flat_number
     `,
@@ -39,6 +40,7 @@ const markAsPaid = async (record_id, admin_id) => {
       FROM monthly_records mr
       JOIN flats f ON mr.flat_id = f.flat_id
       WHERE mr.record_id = $1
+      AND f.resident_id IS NOT NULL
       `,
       [record_id]
     );

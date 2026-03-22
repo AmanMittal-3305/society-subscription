@@ -2,24 +2,23 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { motion, AnimatePresence } from "framer-motion"
 import { CreditCard, Plus, Edit2, Trash2, X, Save, IndianRupee } from "lucide-react"
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
-const typeColors: Record<string, string> = {
-  "1BHK": "from-blue-500 to-cyan-500",
-  "2BHK": "from-indigo-500 to-violet-500",
-  "3BHK": "from-emerald-500 to-teal-500",
-  "4BHK": "from-amber-500 to-orange-500",
-}
+// const typeColors: Record<string, string> = {
+//   "1BHK": "from-blue-500 to-cyan-500",
+//   "2BHK": "from-indigo-500 to-violet-500",
+//   "3BHK": "from-emerald-500 to-teal-500",
+//   "4BHK": "from-amber-500 to-orange-500",
+// }
 
-const typeBg: Record<string, string> = {
-  "1BHK": "bg-blue-50 text-blue-700 border-blue-200",
-  "2BHK": "bg-indigo-50 text-indigo-700 border-indigo-200",
-  "3BHK": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "4BHK": "bg-amber-50 text-amber-700 border-amber-200",
-}
+// const typeBg: Record<string, string> = {
+//   "1BHK": "bg-blue-50 text-blue-700 border-blue-200",
+//   "2BHK": "bg-indigo-50 text-indigo-700 border-indigo-200",
+//   "3BHK": "bg-emerald-50 text-emerald-700 border-emerald-200",
+//   "4BHK": "bg-amber-50 text-amber-700 border-amber-200",
+// }
 
 export default function SubscriptionPage() {
   const [plans, setPlans] = useState<any[]>([])
@@ -88,24 +87,18 @@ export default function SubscriptionPage() {
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {plans.map((plan, i) => {
-          const gradient = typeColors[plan.flat_type] || "from-slate-500 to-slate-600"
-          const badge = typeBg[plan.flat_type] || "bg-slate-50 text-slate-700 border-slate-200"
+          // const gradient = typeColors[plan.flat_type] || "from-slate-500 to-slate-600"
+          // const badge = typeBg[plan.flat_type] || "bg-slate-50 text-slate-700 border-slate-200"
           const isEditing = editId === plan.plan_id
 
           return (
-            <motion.div
-              key={plan.plan_id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-all hover:-translate-y-0.5"
-            >
+            <div key={plan.plan_id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group hover:shadow-md transition-all hover:-translate-y-0.5">
               {/* Gradient Header */}
-              <div className={`h-2 bg-gradient-to-r ${gradient}`} />
+              {/* <div className={`h-2 bg-gradient-to-r ${gradient}`} /> */}
 
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${badge} uppercase tracking-wider`}>
+                  <span className={`text-xs font-bold px-3 py-1.5 rounded-full border uppercase tracking-wider`}>
                     {plan.flat_type}
                   </span>
                   <CreditCard className="w-5 h-5 text-slate-300" />
@@ -170,7 +163,7 @@ export default function SubscriptionPage() {
                   </>
                 )}
               </div>
-            </motion.div>
+            </div>
           )
         })}
       </div>
@@ -183,21 +176,14 @@ export default function SubscriptionPage() {
         </div>
       )}
 
-      {/* Create Plan Modal */}
-      <AnimatePresence>
+      {/*Plan Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div
               onClick={() => setShowModal(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            <div
               className="relative bg-white rounded-2xl shadow-2xl p-8 w-[420px] max-w-[95vw] border border-slate-100"
             >
               <button
@@ -244,10 +230,9 @@ export default function SubscriptionPage() {
                   Create Plan
                 </button>
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
     </div>
   )
 }

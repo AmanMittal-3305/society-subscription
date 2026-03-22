@@ -13,6 +13,8 @@ const getAllFlats = async (adminId, page = 1, limit = 10) => {
       f.owner_name,
       f.address,
       f.resident_id,
+      f.is_active,
+      f.is_visible,
       u.full_name AS resident_name
     FROM flats f
     LEFT JOIN users u
@@ -107,29 +109,49 @@ const updateFlat = async (id, data) => {
   } = data
 
   const result = await pool.query(
-    `
-    UPDATE flats
-    SET
-      flat_number=$1,
-      flat_type=$2,
-      owner_name=$3,
-      address=$4
-    WHERE flat_id=$5
-    RETURNING *
-    `,
-    [flat_number, flat_type, owner_name, address, id]
-  )
+  `
+  UPDATE flats
+  SET
+    flat_number=$1,
+    flat_type=$2,
+    owner_name=$3,
+    address=$4
+  WHERE flat_id=$5 AND is_active=true
+  RETURNING *
+  `,
+  [flat_number, flat_type, owner_name, address, id]
+)
 
   return result.rows[0]
 }
 
 const deleteFlat = async (id) => {
-
-  await pool.query(
-    `DELETE FROM flats WHERE flat_id=$1`,
+  const result = await pool.query(
+    `
+    UPDATE flats
+    SET is_active = false
+    WHERE flat_id = $1
+    AND resident_id IS NULL
+    RETURNING *
+    `,
     [id]
   )
 
+  return result.rows[0]
+}
+
+const restoreFlat = async (id) => {
+  const result = await pool.query(
+    `
+    UPDATE flats
+    SET is_active = true
+    WHERE flat_id = $1
+    RETURNING *
+    `,
+    [id]
+  )
+
+  return result.rows[0]
 }
 
 const getFlatById = async (id) => {
@@ -270,5 +292,6 @@ module.exports = {
   getFlatById,
   getAvailableResidents,
   assignResident,
-  registerResident
+  registerResident,
+  restoreFlat
 }

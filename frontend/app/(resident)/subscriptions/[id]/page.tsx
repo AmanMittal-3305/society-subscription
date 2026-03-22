@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 
 export default function SubscriptionDetailPage() {
   const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const id = params.id;
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -70,17 +70,7 @@ export default function SubscriptionDetailPage() {
             ? new Date(data.payment_date).toLocaleDateString()
             : "Pending"}
         </p>
-
-        <div className="mt-4">
-          <h2 className="font-semibold mb-2">Charge Breakdown</h2>
-
-          <ul className="space-y-2 text-gray-700">
-            <li>Maintenance: ₹{data.maintenance || 0}</li>
-            <li>Water Charges: ₹{data.water_charge || 0}</li>
-            <li>Security Charges: ₹{data.security_charge || 0}</li>
-            <li>Other Charges: ₹{data.other_charge || 0}</li>
-          </ul>
-        </div>
+        
       </div>
     </div>
   );

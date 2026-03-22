@@ -3,16 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { motion, AnimatePresence } from "framer-motion"
-import {
-  Bell,
-  Send,
-  Plus,
-  X,
-  Clock,
-  CheckCircle,
-  Users,
-  User
-} from "lucide-react"
+import { Bell, Send, Plus, X, Clock, CheckCircle, Users, User } from "lucide-react"
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
@@ -236,11 +227,7 @@ export default function NotificationPage() {
         {showCompose && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCompose(false)}
+            <div onClick={() => setShowCompose(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
 

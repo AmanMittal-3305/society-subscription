@@ -187,13 +187,13 @@ function Card({
   icon: any;
 }) {
   return (
-    <motion.div whileHover={{ scale: 1.03 }} className="bg-white rounded-xl p-5 shadow">
+    <div className="bg-white rounded-xl p-5 hover:scale-103 transition-all duration-300 shadow">
       <div className="flex justify-between items-center mb-3">
         <div>{title}</div>
         <div>{icon}</div>
       </div>
 
       <div className="text-2xl font-bold">{value}</div>
-    </motion.div>
+    </div>
   );
 }

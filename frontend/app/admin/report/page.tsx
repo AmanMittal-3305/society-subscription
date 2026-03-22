@@ -50,7 +50,7 @@ export default function ReportsPage() {
       ["Total Collection", report.total_collection],
       ["Pending Amount", report.pending_amount],
       ["Paid Flats", report.paid_flats],
-      ["Pending Flats", report.pending_flats]
+      ["Pending/Unassigned Flats", report.pending_flats]
     ]
     report.payment_modes.forEach((m: any) => {
       rows.push([`Mode ${m.payment_mode}`, m.total])

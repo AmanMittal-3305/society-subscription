@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { motion } from "framer-motion"
 import { Calendar, Search, CheckCircle, Clock, FileText } from "lucide-react"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export default function MonthlyRecordsPage() {
   const [records, setRecords] = useState<any[]>([])
-  const [month, setMonth] = useState(() => {
-    const today = new Date()
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-01`
-  })
+  const [month, setMonth] = useState(new Date())
 
   const fetchRecords = async () => {
     try {
@@ -49,14 +47,19 @@ export default function MonthlyRecordsPage() {
     <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-50">
       <h1 className="text-3xl font-bold text-slate-900">Monthly Records</h1>
 
-      <motion.div className="bg-white p-6 rounded-2xl border shadow-sm flex gap-4 items-end">
+      <div className="bg-white p-6 rounded-2xl border shadow-sm flex gap-4 items-end">
         <div className="flex-1">
-          <label className="text-sm font-medium text-slate-700">Select Month</label>
-          <input
-            type="month"
-            value={month.slice(0, 7)}
-            onChange={(e) => setMonth(e.target.value + "-01")}
-            className="mt-1 w-full p-2.5 border rounded-xl"
+          <label className="block mb-2 text-sm font-medium text-slate-700">Select Month</label>
+          <DatePicker 
+            selected={month}
+            onChange={(date: Date | null) => {
+              if (date) {
+                setMonth(date)
+              }
+            }}
+            dateFormat="MM/yyyy"
+            showMonthYearPicker
+            className="mt-1 cursor-pointer w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <button
@@ -66,9 +69,9 @@ export default function MonthlyRecordsPage() {
           <Search className="w-4 h-4" />
           Load Records
         </button>
-      </motion.div>
+      </div>
 
-      <motion.div className="bg-white rounded-3xl border shadow-sm overflow-x-auto">
+      <div className="bg-white rounded-3xl border shadow-sm overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50/50 text-slate-500 font-medium border-b">
             <tr>
@@ -123,7 +126,7 @@ export default function MonthlyRecordsPage() {
             )}
           </tbody>
         </table>
-      </motion.div>
+      </div>
     </div>
   )
 }

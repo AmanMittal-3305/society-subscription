@@ -25,7 +25,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: `${process.env.FRONTEND_URL}`,
   methods: ["GET","POST","PUT","DELETE"],
   allowedHeaders: ["Content-Type","Authorization"]
 }))
@@ -89,6 +89,7 @@ app.get("/", (req, res) => {
   res.send("Society API Running");
 });
 
+// error handler and middleware
 
 const PORT = process.env.PORT || 5000;
 

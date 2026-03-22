@@ -67,6 +67,22 @@ const deleteFlat = async (req, res) => {
 
 }
 
+const restoreFlat = async (req, res) => {
+  try {
+    const flat = await flatService.restoreFlat(req.params.id)
+
+    res.json({
+      success: true,
+      flat
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({
+      success: false
+    })
+  }
+}
+
 const getFlatById = async (req, res) => {
 
   try{
@@ -144,5 +160,6 @@ module.exports = {
   getFlatById,
   getAvailableResidents,
   assignResident,
-  registerResident
+  registerResident,
+  restoreFlat
 }

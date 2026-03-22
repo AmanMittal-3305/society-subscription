@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   IndianRupee,
   CheckCircle,
@@ -50,22 +49,15 @@ export default function SubscriptionPage() {
 
       <div className="grid gap-4">
         {subscriptions.map((item, index) => (
-          <motion.div
-            key={item.record_id}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-white p-5 rounded-xl shadow border"
-          >
+          <div key={item.record_id} className="bg-white p-5 rounded-xl shadow border">
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="font-semibold text-lg">
-                  {new Date(item.billing_month).toLocaleDateString()}
+                  {new Date(item.billing_month).toDateString()}
                 </h2>
 
                 <p className="flex items-center gap-2 text-gray-600 mt-2">
-                  <IndianRupee size={16} />
-                  Amount: ₹{item.amount}
+                  Amount: ₹{parseFloat(item.amount)}
                 </p>
 
                 <p className="mt-1 text-gray-600">
@@ -74,15 +66,7 @@ export default function SubscriptionPage() {
 
                 <p className="mt-1">
                   Status:
-                  <span
-                    className={`ml-2 font-medium ${
-                      item.status === "PAID"
-                        ? "text-green-600"
-                        : item.status === "PARTIAL"
-                        ? "text-blue-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
+                  <span className={`ml-2 font-medium ${item.status === "PAID" ? "text-green-600" : "text-yellow-600"}`}>
                     {item.status === "PAID" ? (
                       <CheckCircle className="inline w-4 h-4 mr-1" />
                     ) : (
@@ -94,26 +78,17 @@ export default function SubscriptionPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Link
-                  href={`/subscriptions/${item.record_id}`}
-                  className="text-blue-600 font-medium"
-                >
-                  View Details
-                </Link>
+                <Link href={`/subscriptions/${item.record_id}`} className="text-blue-600 font-medium">View Details</Link>
 
                 {item.receipt_url && (
-                  <a
-                    href={item.receipt_url}
-                    target="_blank"
-                    className="text-green-600 flex items-center gap-1"
-                  >
+                  <a href={item.receipt_url} target="_blank" className="text-green-600 flex items-center gap-1">
                     <FileText size={16} />
                     Receipt
                   </a>
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

@@ -86,6 +86,26 @@ export default function FlatsPage() {
     }
   }
 
+  const restoreFlat = async (id: string) => {
+    try {
+      const token = localStorage.getItem("token")
+
+      await axios.put(
+        `${API}/api/admin/flats/${id}/restore`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      fetchFlats()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   useEffect(() => {
     fetchFlats()
   }, [page])
@@ -374,8 +394,8 @@ export default function FlatsPage() {
                   alt={`Thumbnail ${index}`}
                   onClick={() => setCurrentImage(index)}
                   className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${currentImage === index
-                      ? "border-indigo-600"
-                      : "border-gray-300"
+                    ? "border-indigo-600"
+                    : "border-gray-300"
                     }`}
                 />
               ))}
@@ -415,7 +435,10 @@ export default function FlatsPage() {
 
         <tbody>
           {filteredFlats.map((flat) => (
-            <tr key={flat.flat_id} className="border-t">
+            <tr
+              key={flat.flat_id}
+              className={`border-t ${flat.is_active === false ? "opacity-40 bg-gray-100" : ""}`}
+            >
 
               <td className="p-4">{flat.flat_number}</td>
               <td>{flat.owner_name}</td>
@@ -426,7 +449,11 @@ export default function FlatsPage() {
                 ) : (
                   <button
                     onClick={() => openResidentModal(flat.flat_id)}
-                    className="text-indigo-600"
+                    disabled={flat.is_active === false}
+                    className={`${flat.is_active === false
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-indigo-600"
+                      }`}
                   >
                     Add Resident
                   </button>
@@ -446,13 +473,25 @@ export default function FlatsPage() {
               </td>
 
               <td className="flex gap-2 p-4">
-                <button onClick={() => handleEdit(flat)}>
+                <button
+                  onClick={() => handleEdit(flat)}
+                  disabled={flat.is_active === false}
+                >
                   <Edit2 className="w-4 h-4" />
                 </button>
 
-                <button onClick={() => deleteFlat(flat.flat_id)}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {flat.is_active ? (
+                  <button onClick={() => deleteFlat(flat.flat_id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => restoreFlat(flat.flat_id)}
+                    className="text-xs text-green-600"
+                  >
+                    Restore
+                  </button>
+                )}
               </td>
 
               {/* <td className="flex gap-2 p-4">

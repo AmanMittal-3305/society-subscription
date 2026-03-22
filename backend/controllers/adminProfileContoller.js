@@ -44,7 +44,7 @@ const updateProfile = async (req, res) => {
     // Only update password if provided
     if (password && password.length > 0) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      query += `, password = $4`;
+      query += `, password_hash = $4`;
       values.push(hashedPassword);
     }
 

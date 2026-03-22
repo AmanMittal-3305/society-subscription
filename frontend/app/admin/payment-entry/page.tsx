@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { motion } from "framer-motion"
 import { Calendar, Wallet, CheckCircle, CreditCard, Banknote, ChevronDown } from "lucide-react"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
@@ -12,16 +13,12 @@ const paymentModes = [
   { value: "UPI", label: "UPI", icon: Wallet },
   { value: "NEFT", label: "NEFT", icon: CreditCard },
   { value: "CHEQUE", label: "Cheque", icon: CreditCard },
-  { value: "ONLINE", label: "Online", icon: CreditCard },
 ]
 
 export default function PaymentEntryPage() {
   const [records, setRecords] = useState<any[]>([])
   const [selectedRecord, setSelectedRecord] = useState<any>(null)
-  const [month, setMonth] = useState(() => {
-    const today = new Date()
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
-  })
+  const [month, setMonth] = useState(new Date())
   const [form, setForm] = useState({
     record_id: "",
     payment_mode: "CASH",
@@ -35,7 +32,9 @@ export default function PaymentEntryPage() {
     try {
       const token = localStorage.getItem("token")
       const res = await axios.get(`${API}/api/admin/payment-entry`, {
-        params: { month: month + "-01" },
+        params: {
+          month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-01`
+        },
         headers: { Authorization: `Bearer ${token}` }
       })
       setRecords(res.data)
@@ -44,7 +43,16 @@ export default function PaymentEntryPage() {
     }
   }
 
-  useEffect(() => { fetchRecords() }, [month])
+  useEffect(() => {
+    fetchRecords()
+    setSelectedRecord(null)
+    setForm({
+      record_id: "",
+      payment_mode: "CASH",
+      payment_source: "OFFLINE",
+      transaction_id: ""
+    })
+  }, [month])
 
   const handleFlatChange = (record_id: string) => {
     const record = records.find(r => r.record_id === record_id)
@@ -80,15 +88,10 @@ export default function PaymentEntryPage() {
 
       {/* Success Toast */}
       {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl"
-        >
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl">
           <CheckCircle className="w-5 h-5" />
           <span className="font-medium">Payment recorded successfully!</span>
-        </motion.div>
+        </div>
       )}
 
       {error && (
@@ -104,10 +107,13 @@ export default function PaymentEntryPage() {
             <Calendar className="w-4 h-4 text-indigo-500" />
             Billing Month
           </label>
-          <input
-            type="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
+          <DatePicker
+            selected={month}
+            onChange={(date: Date | null) => {
+              if (date) setMonth(date)
+            }}
+            dateFormat="MM/yyyy"
+            showMonthYearPicker={true}
             className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
         </div>
@@ -135,11 +141,7 @@ export default function PaymentEntryPage() {
 
         {/* Amount Display */}
         {selectedRecord && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-center justify-between"
-          >
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wider">Amount Due</p>
               <p className="text-2xl font-bold text-indigo-900 mt-1">₹{parseFloat(selectedRecord.amount).toLocaleString()}</p>
@@ -148,7 +150,7 @@ export default function PaymentEntryPage() {
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Flat</p>
               <p className="text-lg font-bold text-slate-900 mt-1">{selectedRecord.flat_number}</p>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Payment Mode */}
@@ -164,8 +166,8 @@ export default function PaymentEntryPage() {
                   key={mode.value}
                   onClick={() => setForm({ ...form, payment_mode: mode.value })}
                   className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border text-xs font-semibold transition-all ${isSelected
-                      ? "bg-indigo-50 border-indigo-300 text-indigo-700 shadow-sm"
-                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                    ? "bg-indigo-50 border-indigo-300 text-indigo-700 shadow-sm"
+                    : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
                     }`}
                 >
                   <Icon className="w-4 h-4" />

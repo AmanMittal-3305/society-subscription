@@ -21,12 +21,11 @@ router.get("/subscriptions/:id", residentSubscriptionController.getSubscriptionD
 
 router.post("/pay-now", paymentController.payNow)
 router.get("/pending-payments", paymentController.getPendingPayments)
+router.post("/create-checkout-session", paymentController.createCheckoutSession)
 
 router.get("/notifications", notificationController.getNotifications);
 router.put("/save-token", notificationController.saveFCMToken);
-
 router.get("/notifications/unread", notificationController.unreadNotifications);
-
 router.put("/notifications/read", notificationController.readNotifications );
 
 module.exports = router;

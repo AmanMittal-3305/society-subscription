@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, ShieldCheck, MapPin, Building, Edit2 } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminProfile() {
   const [user, setUser] = useState<any>(null);
@@ -126,7 +127,7 @@ export default function AdminProfile() {
             >
               <button className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-slate-900/20 active:scale-95 flex items-center gap-2">
                 <Edit2 className="w-4 h-4" />
-                Edit Profile
+                <Link href={`/admin/profile/${user.user_id}`}>Edit Profile</Link>
               </button>
             </motion.div>
           </div>

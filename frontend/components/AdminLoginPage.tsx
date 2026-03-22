@@ -3,7 +3,6 @@
 import { useState } from "react"
 import axios from "axios"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
 import { Mail, Lock, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
 
 export default function AdminLoginPage() {
@@ -40,65 +39,38 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, duration: 0.4 }}
-      className="space-y-5"
-    >
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <ShieldCheck className="w-5 h-5 text-indigo-600" />
-          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Admin Portal</span>
+          <span className="text-xs font-bold text-indigo-600 uppercase">Admin Portal</span>
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Sign In</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Admin Sign In</h2>
         <p className="text-slate-500 text-sm mt-1">Access the society management dashboard</p>
       </div>
 
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl text-sm font-medium"
-        >
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
-        </motion.div>
+        </div>
       )}
 
       <div className="space-y-4">
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            type="email"
-            placeholder="Admin email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-          />
+          <input type="email" placeholder="Admin email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm" />
         </div>
 
         <div className="relative">
           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
           />
         </div>
       </div>
       
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-slate-900/25 hover:shadow-slate-900/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60"
-      >
+      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-slate-900/25 hover:shadow-slate-900/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60">
         {loading ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
@@ -110,6 +82,6 @@ export default function AdminLoginPage() {
       </button>
 
 
-    </motion.form>
+    </form>
   )
 }

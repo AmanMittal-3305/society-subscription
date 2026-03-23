@@ -1,7 +1,7 @@
 "use client";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAdminProfile, updateAdminProfile } from "@/services/adminApi";
 
 export default function ResidentProfileUpdate() {
     const router = useRouter();
@@ -13,18 +13,14 @@ export default function ResidentProfileUpdate() {
         password: "",
     });
 
-    // Fetch user data on mount
     useEffect(() => {
         fetchUser();
     }, []);
 
     const fetchUser = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/admin/profile", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setData(res.data.user || res.data); // adjust based on your backend
+            const res = await getAdminProfile();
+            setData(res.data.user || res.data);
             setFormData({
                 name: res.data.user?.full_name || "",
                 email: res.data.user?.email || "",
@@ -36,27 +32,19 @@ export default function ResidentProfileUpdate() {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
         });
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.put(
-                "http://localhost:5000/api/admin/profile",
-                formData,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+            const res = await updateAdminProfile(formData);
             console.log(res.data);
             alert("Profile updated successfully!");
-            // Redirect back to /profile after successful update
             router.push("/admin/profile");
         } catch (err) {
             console.error(err);

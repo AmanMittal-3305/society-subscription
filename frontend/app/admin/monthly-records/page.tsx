@@ -1,12 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import axios from "axios"
 import { Calendar, Search, CheckCircle, Clock, FileText } from "lucide-react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+import { getMonthlyRecords, markRecordPaid } from "@/services/adminApi"
 
 export default function MonthlyRecordsPage() {
   const [records, setRecords] = useState<any[]>([])
@@ -14,11 +12,7 @@ export default function MonthlyRecordsPage() {
 
   const fetchRecords = async () => {
     try {
-      const token = localStorage.getItem("token")
-      const res = await axios.get(`${API}/api/admin/monthly-records`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { month }
-      })
+      const res = await getMonthlyRecords(month)
       setRecords(res.data)
     } catch (err) {
       console.error("Error fetching records:", err)
@@ -27,16 +21,11 @@ export default function MonthlyRecordsPage() {
 
   useEffect(() => {
     fetchRecords()
-  }, [month])
+  }, [])
 
-  const markPaid = async (record_id: string) => {
+  const handleMarkPaid = async (record_id: string) => {
     try {
-      const token = localStorage.getItem("token")
-      await axios.put(
-        `${API}/api/admin/monthly-records/${record_id}/mark-paid`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      await markRecordPaid(record_id)
       fetchRecords()
     } catch (err) {
       console.error("Error marking paid:", err)
@@ -50,13 +39,11 @@ export default function MonthlyRecordsPage() {
       <div className="bg-white p-6 rounded-2xl border shadow-sm flex gap-4 items-end">
         <div className="flex-1">
           <label className="block mb-2 text-sm font-medium text-slate-700">Select Month</label>
-          <DatePicker 
-            selected={month}
-            onChange={(date: Date | null) => {
-              if (date) {
-                setMonth(date)
-              }
-            }}
+          <DatePicker selected={month} onChange={(date: Date | null) => {
+            if (date) {
+              setMonth(date)
+            }
+          }}
             dateFormat="MM/yyyy"
             showMonthYearPicker
             className="mt-1 cursor-pointer w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
@@ -94,7 +81,7 @@ export default function MonthlyRecordsPage() {
               </tr>
             ) : (
               records.map((r) => (
-                <tr key={r.record_id} className="hover:bg-slate-50/80 transition-colors">
+                <tr key={r.record_id} className="hover:bg-slate-50/80">
                   <td className="px-6 py-4 font-bold">{r.flat_number}</td>
                   <td className="px-6 py-4">{r.flat_type}</td>
                   <td className="px-6 py-4">₹{r.amount}</td>
@@ -104,17 +91,14 @@ export default function MonthlyRecordsPage() {
                         <CheckCircle className="w-3.5 h-3.5" /> Paid
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 px-2.5 py-1 rounded-lg text-xs font-bold uppercase">
+                      <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-600 px-2.5 py-1 rounded-lg text-xs font-bold uppercase">
                         <Clock className="w-3.5 h-3.5" /> Pending
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
                     {r.status === "PENDING" ? (
-                      <button
-                        onClick={() => markPaid(r.record_id)}
-                        className="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold"
-                      >
+                      <button onClick={() => handleMarkPaid(r.record_id)} className="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">
                         Mark Paid
                       </button>
                     ) : (

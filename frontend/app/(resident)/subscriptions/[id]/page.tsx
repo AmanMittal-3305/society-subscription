@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "next/navigation";
+import { getSubscriptionDetail } from "@/services/residentApi";
 
 export default function SubscriptionDetailPage() {
   const params = useParams();
@@ -19,17 +19,7 @@ export default function SubscriptionDetailPage() {
 
   const fetchDetails = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `http://localhost:5000/api/resident/subscriptions/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await getSubscriptionDetail(id as string);
       setData(res.data.data);
     } catch (err) {
       console.error(err);
@@ -70,7 +60,7 @@ export default function SubscriptionDetailPage() {
             ? new Date(data.payment_date).toLocaleDateString()
             : "Pending"}
         </p>
-        
+
       </div>
     </div>
   );

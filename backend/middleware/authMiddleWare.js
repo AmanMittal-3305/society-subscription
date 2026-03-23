@@ -1,4 +1,3 @@
-const { log } = require("console");
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {

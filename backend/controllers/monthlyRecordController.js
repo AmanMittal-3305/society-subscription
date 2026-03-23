@@ -4,7 +4,7 @@ const service = require("../services/monthlyRecordService");
 exports.getRecords = async (req, res) => {
   try {
     const admin_id = req.user.user_id;
-    const { month } = req.query;
+    const month = req.query.month;
 
     if (!month) return res.status(400).json({ error: "month is required" });
 

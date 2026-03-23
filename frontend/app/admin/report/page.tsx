@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { motion } from "framer-motion"
 import { jsPDF } from "jspdf"
 import {
@@ -14,8 +13,7 @@ import {
   Calendar,
   BarChart3
 } from "lucide-react"
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+import { getMonthlyReport } from "@/services/adminApi"
 
 export default function ReportsPage() {
   const [month, setMonth] = useState(() => {
@@ -28,11 +26,7 @@ export default function ReportsPage() {
   const fetchReport = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem("token")
-      const res = await axios.get(`${API}/api/admin/reports/monthly`, {
-        params: { month: month + "-01" },
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await getMonthlyReport(month + "-01")
       setReport(res.data)
     } catch (err) {
       console.log(err)
@@ -124,7 +118,7 @@ export default function ReportsPage() {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="w-full max-w-xs px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+          className="w-full max-w-xs px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer"
         />
       </div>
 

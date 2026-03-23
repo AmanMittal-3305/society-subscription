@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Mail, Lock, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react"
+import { loginUser } from "@/services/authApi"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -21,10 +21,7 @@ export default function AdminLoginPage() {
     setError("")
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-        { email, password, role }
-      )
+      const res = await loginUser({ email, password, role })
 
       if (res.data.success) {
         localStorage.setItem("token", res.data.token)
@@ -68,7 +65,7 @@ export default function AdminLoginPage() {
           />
         </div>
       </div>
-      
+
 
       <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-slate-900/25 hover:shadow-slate-900/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60">
         {loading ? (

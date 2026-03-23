@@ -1,26 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Link from "next/link";
+import { getAdminDashboard } from "@/services/adminApi";
 
-import {
-    Building2,
-    Users,
-    IndianRupee,
-    AlertTriangle,
-    Activity,
-    CreditCard
-} from "lucide-react";
+import { Building2, Users, IndianRupee, AlertTriangle, Activity, CreditCard } from "lucide-react";
 
-import {
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid
-} from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function DashboardPage() {
     const [data, setData] = useState({
@@ -40,16 +25,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const token = localStorage.getItem("token");
-
-                const res = await axios.get(
-                    "http://localhost:5000/api/admin/dashboard",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
+                const res = await getAdminDashboard();
 
                 if (res.data.success) {
                     setData(res.data.data);
@@ -87,13 +63,11 @@ export default function DashboardPage() {
         {
             name: "Revenue Collected",
             value: formatCurrency(data.total_collected),
-            // value: `₹${data.total_collected}`,
             icon: IndianRupee,
         },
         {
             name: "Pending Dues",
             value: formatCurrency(data.total_pending),
-            // value: `₹${data.total_pending}`,
             icon: AlertTriangle,
         }
     ];
@@ -222,8 +196,8 @@ export default function DashboardPage() {
                                         </p>
                                         <span
                                             className={`text-xs font-medium py-1 rounded-md ${tx.status === "PAID"
-                                                    ? "bg-emerald-50 text-emerald-600"
-                                                    : "bg-amber-50 text-amber-600"
+                                                ? "bg-emerald-50 text-emerald-600"
+                                                : "bg-amber-50 text-amber-600"
                                                 }`}
                                         >
                                             {tx.status}

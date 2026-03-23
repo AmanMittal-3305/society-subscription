@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import axios from "axios";
+import { createCheckoutSession } from "@/services/residentApi";
 
 export default function PayNowPage() {
   const params = useParams();
@@ -12,20 +12,8 @@ export default function PayNowPage() {
 
   const handlePayment = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/resident/create-checkout-session`,
-        { record_id: recordId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await createCheckoutSession(recordId as string);
       window.location.href = response.data.url;
-
     } catch (err: any) {
       console.error(err);
       setMessage("Payment failed");

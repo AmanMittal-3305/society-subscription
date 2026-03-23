@@ -1,17 +1,24 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
 import {
   Plus,
   Edit2,
   Trash2,
   Image
 } from "lucide-react"
+import {
+  getFlats,
+  createFlat,
+  updateFlat,
+  deleteFlat as deleteFlatApi,
+  restoreFlat as restoreFlatApi,
+  getAvailableResidents,
+  assignResident,
+  registerResidentToFlat,
+} from "@/services/adminApi"
 
 export default function FlatsPage() {
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-
   const [flats, setFlats] = useState<any[]>([])
   const [search, setSearch] = useState("")
 
@@ -50,20 +57,9 @@ export default function FlatsPage() {
 
   const fetchFlats = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      const res = await axios.get(
-        `${API}/api/admin/flats?page=${page}&limit=5`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
+      const res = await getFlats(page)
       setFlats(res.data.flats || [])
       setTotalPages(res.data.totalPages || 1)
-
     } catch (err) {
       console.error(err)
       setFlats([])
@@ -72,34 +68,16 @@ export default function FlatsPage() {
 
   const fetchResidents = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      const res = await axios.get(`${API}/api/admin/flats/available-residents`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      const res = await getAvailableResidents()
       setResidents(res.data)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const restoreFlat = async (id: string) => {
+  const handleRestore = async (id: string) => {
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.put(
-        `${API}/api/admin/flats/${id}/restore`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
+      await restoreFlatApi(id)
       fetchFlats()
     } catch (err) {
       console.error(err)
@@ -112,38 +90,17 @@ export default function FlatsPage() {
 
   const saveFlat = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const data = {
+        flat_number: flatNumber,
+        owner_name: ownerName,
+        flat_type: flatType,
+        address
+      }
 
       if (editingId) {
-        await axios.put(
-          `${API}/api/admin/flats/${editingId}`,
-          {
-            flat_number: flatNumber,
-            owner_name: ownerName,
-            flat_type: flatType,
-            address
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        )
+        await updateFlat(editingId, data)
       } else {
-        await axios.post(
-          `${API}/api/admin/flats`,
-          {
-            flat_number: flatNumber,
-            owner_name: ownerName,
-            flat_type: flatType,
-            address
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        )
+        await createFlat(data)
       }
 
       setFlatNumber("")
@@ -159,16 +116,9 @@ export default function FlatsPage() {
     }
   }
 
-  const deleteFlat = async (id: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.delete(`${API}/api/admin/flats/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      await deleteFlatApi(id)
       fetchFlats()
     } catch (err) {
       console.error(err)
@@ -191,48 +141,24 @@ export default function FlatsPage() {
     setShowResidentModal(true)
   }
 
-  const assignResident = async () => {
+  const handleAssignResident = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.put(
-        `${API}/api/admin/flats/${selectedFlat}/assign-resident`,
-        {
-          resident_id: selectedResident
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
-
+      await assignResident(selectedFlat, selectedResident)
       setSelectedResident("")
       setShowResidentModal(false)
-
       fetchFlats()
     } catch (err) {
       console.error(err)
     }
   }
 
-  const registerResident = async () => {
+  const handleRegisterResident = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.post(
-        `${API}/api/admin/flats/${selectedFlat}/register-resident`,
-        {
-          full_name: newResidentName,
-          email: newResidentEmail,
-          phone_number: newResidentPhone
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      )
+      await registerResidentToFlat(selectedFlat, {
+        full_name: newResidentName,
+        email: newResidentEmail,
+        phone_number: newResidentPhone
+      })
 
       setNewResidentName("")
       setNewResidentEmail("")
@@ -481,28 +407,18 @@ export default function FlatsPage() {
                 </button>
 
                 {flat.is_active ? (
-                  <button onClick={() => deleteFlat(flat.flat_id)}>
+                  <button onClick={() => handleDelete(flat.flat_id)}>
                     <Trash2 className="w-4 h-4" />
                   </button>
                 ) : (
                   <button
-                    onClick={() => restoreFlat(flat.flat_id)}
+                    onClick={() => handleRestore(flat.flat_id)}
                     className="text-xs text-green-600"
                   >
                     Restore
                   </button>
                 )}
               </td>
-
-              {/* <td className="flex gap-2 p-4">
-                <button onClick={() => handleEdit(flat)}>
-                  <Edit2 className="w-4 h-4" />
-                </button>
-
-                <button onClick={() => deleteFlat(flat.flat_id)}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </td> */}
 
             </tr>
           ))}
@@ -531,7 +447,7 @@ export default function FlatsPage() {
             </select>
 
             <button
-              onClick={assignResident}
+              onClick={handleAssignResident}
               className="w-full bg-indigo-600 text-white py-2 rounded"
             >
               Assign Existing Resident
@@ -590,7 +506,7 @@ export default function FlatsPage() {
             />
 
             <button
-              onClick={registerResident}
+              onClick={handleRegisterResident}
               className="w-full bg-green-600 text-white py-2 rounded"
             >
               Register Resident

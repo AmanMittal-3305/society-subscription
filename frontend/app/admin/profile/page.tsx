@@ -1,34 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { motion } from "framer-motion";
 import { User, Mail, Phone, ShieldCheck, MapPin, Building, Edit2 } from "lucide-react";
 import Link from "next/link";
+import { getAdminProfile } from "@/services/adminApi";
 
 export default function AdminProfile() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async () => {
+    try {
+      const res = await getAdminProfile();
+      setUser(res.data.user);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/admin/profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setUser(res.data.user);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProfile();
   }, []);
 
@@ -48,6 +41,8 @@ export default function AdminProfile() {
     );
   }
 
+
+
   const getInitials = (name: string) => {
     if (!name) return "A";
     const parts = name.split(" ");
@@ -65,82 +60,49 @@ export default function AdminProfile() {
     { label: "Role", value: user.role, icon: ShieldCheck, highlight: true }
   ];
 
-  
+
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Dynamic Header Background */}
+      {/* Header Background */}
       <div className="h-64 sm:h-80 w-full bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-12 -right-12 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10 pb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden"
-        >
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden">
           {/* Profile Header Section */}
           <div className="p-8 sm:p-10 border-b border-slate-100 flex flex-col sm:flex-row items-center sm:items-end gap-6 sm:gap-8">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="relative group cursor-pointer"
-            >
-              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-5xl sm:text-6xl font-bold shadow-xl border-4 border-white transition-transform duration-300 group-hover:scale-105">
+            <div className="relative group cursor-pointer">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-5xl sm:text-6xl font-bold shadow-xl border-4 border-white">
                 {getInitials(user.full_name)}
               </div>
-              <div className="absolute bottom-2 right-2 w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-indigo-600">
-                <Edit2 className="w-4 h-4" />
-              </div>
-            </motion.div>
 
-            <div className="flex flex-col text-center sm:text-left flex-1 mb-2">
-              <motion.h1
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight"
-              >
-                {user.full_name}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-indigo-600 font-medium flex items-center justify-center sm:justify-start gap-1.5 mt-1 sm:mt-2 text-sm sm:text-base uppercase tracking-wide"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Administrator
-              </motion.p>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mb-2"
+            <div className="flex flex-col text-center sm:text-left flex-1 mb-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                {user.full_name}
+              </h1>
+              <p className="text-indigo-600 font-medium flex items-center justify-center sm:justify-start gap-1.5 mt-1 sm:mt-2 text-sm sm:text-base uppercase tracking-wide">
+                <ShieldCheck className="w-4 h-4" />
+                Administrator
+              </p>
+            </div>
+
+            <div className="mb-2"
             >
               <button className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors shadow-lg shadow-slate-900/20 active:scale-95 flex items-center gap-2">
                 <Edit2 className="w-4 h-4" />
                 <Link href={`/admin/profile/${user.user_id}`}>Edit Profile</Link>
               </button>
-            </motion.div>
+            </div>
           </div>
 
           {/* Profile Details Sections */}
           <div className="p-8 sm:p-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
 
             {/* Personal Information */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
+            <div>
               <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <User className="w-5 h-5 text-indigo-500" />
                 Personal Information
@@ -161,14 +123,10 @@ export default function AdminProfile() {
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
 
             {/* Admin Details */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
+            <div>
               <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-indigo-500" />
                 Administrative Details
@@ -191,10 +149,10 @@ export default function AdminProfile() {
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
 
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

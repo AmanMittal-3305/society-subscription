@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Mail, Lock, ArrowRight, AlertCircle } from "lucide-react"
+import { loginUser } from "@/services/authApi"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,10 +21,7 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
-        { email, password, role }
-      )
+      const res = await loginUser({ email, password, role })
 
       if (res.data.success) {
         localStorage.setItem("token", res.data.token)

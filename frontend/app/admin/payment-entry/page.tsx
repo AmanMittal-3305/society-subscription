@@ -1,12 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { Calendar, Wallet, CheckCircle, CreditCard, Banknote, ChevronDown } from "lucide-react"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+import { getPaymentEntryRecords, submitPaymentEntry } from "@/services/adminApi"
 
 const paymentModes = [
   { value: "CASH", label: "Cash", icon: Banknote },
@@ -30,13 +28,8 @@ export default function PaymentEntryPage() {
 
   const fetchRecords = async () => {
     try {
-      const token = localStorage.getItem("token")
-      const res = await axios.get(`${API}/api/admin/payment-entry`, {
-        params: {
-          month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-01`
-        },
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}-01`
+      const res = await getPaymentEntryRecords(monthStr)
       setRecords(res.data)
     } catch (err) {
       console.log(err)
@@ -64,10 +57,7 @@ export default function PaymentEntryPage() {
     e.preventDefault()
     setError("")
     try {
-      const token = localStorage.getItem("token")
-      await axios.post(`${API}/api/admin/payment-entry`, form, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await submitPaymentEntry(form)
       setSuccess(true)
       setSelectedRecord(null)
       setForm({ record_id: "", payment_mode: "CASH", payment_source: "OFFLINE", transaction_id: "" })

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 import {
   IndianRupee,
@@ -9,6 +8,7 @@ import {
   Clock3,
   FileText,
 } from "lucide-react";
+import { getResidentSubscriptions } from "@/services/residentApi";
 
 export default function SubscriptionPage() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -20,17 +20,7 @@ export default function SubscriptionPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        "http://localhost:5000/api/resident/subscriptions",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await getResidentSubscriptions();
       setSubscriptions(res.data.data);
     } catch (err) {
       console.error(err);

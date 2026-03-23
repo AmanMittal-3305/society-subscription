@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Link from "next/link";
+import { registerUser } from "@/services/authApi";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,16 +19,13 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, // <--- backend endpoint
-        {
-          email,
-          password,
-          full_name: fullName,
-          phone_number: phone,
-          role,
-        }
-      );
+      const res = await registerUser({
+        email,
+        password,
+        full_name: fullName,
+        phone_number: phone,
+        role,
+      });
 
       if (res.data.success) {
         alert("Registered successfully. Please login.");

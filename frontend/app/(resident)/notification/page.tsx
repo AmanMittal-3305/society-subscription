@@ -1,20 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Clock } from "lucide-react";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { getResidentNotifications, markNotificationsRead } from "@/services/residentApi";
 
 export default function ResidentNotifications() {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API}/api/resident/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await getResidentNotifications();
 
       // Keep only unique notifications
       const unique = Array.from(
@@ -26,14 +21,9 @@ export default function ResidentNotifications() {
     }
   };
 
-  const markAsRead = async () => {
+  const handleMarkAsRead = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${API}/api/resident/notifications/read`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await markNotificationsRead();
     } catch (err) {
       console.error(err);
     }
@@ -51,7 +41,7 @@ export default function ResidentNotifications() {
 
   useEffect(() => {
     fetchNotifications();
-    markAsRead();
+    handleMarkAsRead();
   }, []);
 
   return (

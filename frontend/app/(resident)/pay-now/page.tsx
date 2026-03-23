@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { getPendingPayments } from "@/services/residentApi";
 
 export default function PayNowList() {
     const [records, setRecords] = useState<any[]>([]);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        axios.get("http://localhost:5000/api/resident/pending-payments", {
-            headers: { Authorization: `Bearer ${token}` },
-        }).then(res => setRecords(res.data))
+        getPendingPayments()
+            .then(res => setRecords(res.data))
             .catch(err => console.error(err));
     }, []);
 

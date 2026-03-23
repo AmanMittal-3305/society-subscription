@@ -3,13 +3,11 @@
 import ResidentSidebar from "@/components/ResidentSidebar";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Bell, User } from "lucide-react";
 import Link from "next/link";
 import { messaging, registerServiceWorker } from "@/utils/firebase";
 import { getToken, onMessage } from "firebase/messaging";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { getUnreadCount, saveFcmToken } from "@/services/residentApi";
 
 export default function ResidentLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -18,10 +16,7 @@ export default function ResidentLayout({ children }: { children: React.ReactNode
     // Fetch unread notifications count
     const fetchUnread = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get(`${API}/api/resident/notifications/unread`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await getUnreadCount();
             setHasUnread(res.data.unread > 0);
         } catch (err) {
             console.error("Unread fetch error:", err);
@@ -67,11 +62,7 @@ export default function ResidentLayout({ children }: { children: React.ReactNode
                 const authToken = localStorage.getItem("token");
                 if (authToken) {
                     console.log("Saving FCM token to backend...");
-                    await axios.put(
-                        `${API}/api/resident/save-token`,
-                        { token: fcmToken },
-                        { headers: { Authorization: `Bearer ${authToken}` } }
-                    );
+                    await saveFcmToken(fcmToken);
                     console.log("FCM token saved successfully");
                 } else {
                     console.warn("No auth token found, cannot save FCM token");
@@ -144,7 +135,7 @@ export default function ResidentLayout({ children }: { children: React.ReactNode
                     </Link>
                 </div>
 
-                <main className="flex-1 overflow-y-auto p-6">{children}</main>
+                <main className="flex-1 overflow-y-auto">{children}</main>
             </div>
         </div>
     );

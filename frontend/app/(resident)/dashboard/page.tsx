@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -10,74 +9,23 @@ import {
   CreditCard,
   Bell,
 } from "lucide-react";
-
-// import { messaging } from "@/lib/firebase";
-// import { getToken, onMessage } from "firebase/messaging";
+import { getResidentDashboard } from "@/services/residentApi";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
     fetchDashboard();
-    // setupFirebase();
   }, []);
 
   const fetchDashboard = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/resident/dashboard`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await getResidentDashboard();
       setData(res.data.data);
     } catch (error) {
       console.error(error);
     }
   };
-
-//   const setupFirebase = async () => {
-//   try {
-//     const permission = await Notification.requestPermission();
-
-//     if (permission === "granted") {
-//       const token = await getToken(messaging, {
-//         vapidKey: "BCHzVajWdPEHQOOglEH_OKIJRAitQ6qVGIPn1gkk-6gx24_pMkLfw1bk7mDvUUrugxAUbwP__lf6Z9xt7R71Tg4"
-//       });
-
-//       console.log("FCM Token:", token);
-
-//       const authToken = localStorage.getItem("token");
-
-//       await axios.put(
-//         `${process.env.NEXT_PUBLIC_API_URL}/api/resident/save-token`,
-//         { token },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${authToken}`
-//           }
-//         }
-//       );
-//     }
-
-//     onMessage(messaging, (payload) => {
-//       console.log("Foreground notification:", payload);
-
-//       alert(
-//         `${payload.notification?.title}\n${payload.notification?.body}`
-//       );
-//       window.dispatchEvent(new Event("notification-received"))
-//     });
-
-//   } catch (err) {
-//     console.error("Firebase error:", err);
-//   }
-// };
 
   if (!data) {
     return (

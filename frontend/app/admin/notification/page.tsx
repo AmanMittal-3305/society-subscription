@@ -1,11 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { motion, AnimatePresence } from "framer-motion"
 import { Bell, Send, Plus, X, Clock, CheckCircle, Users, User } from "lucide-react"
-
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+import { getAdminNotifications, sendNotification, getResidents } from "@/services/adminApi"
 
 export default function NotificationPage() {
   const [notifications, setNotifications] = useState<any[]>([])
@@ -24,16 +21,8 @@ export default function NotificationPage() {
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      const res = await axios.get(`${API}/api/admin/notifications`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      const res = await getAdminNotifications()
       setNotifications(res.data)
-
     } catch (err) {
       console.error(err)
     } finally {
@@ -43,16 +32,8 @@ export default function NotificationPage() {
 
   const fetchResidents = async () => {
     try {
-      const token = localStorage.getItem("token")
-
-      const res = await axios.get(`${API}/api/admin/residents`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      const res = await getResidents()
       setResidents(res.data)
-
     } catch (err) {
       console.error(err)
     }
@@ -65,26 +46,16 @@ export default function NotificationPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const sendNotification = async () => {
+  const handleSend = async () => {
     setSending(true)
 
     try {
-      const token = localStorage.getItem("token")
-
-      await axios.post(
-        `${API}/api/admin/notifications`,
-        {
-          title: form.title,
-          message: form.message,
-          recipient_ids: form.send_to_all ? [] : form.recipient_ids,
-          send_to_all: form.send_to_all,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      await sendNotification({
+        title: form.title,
+        message: form.message,
+        recipient_ids: form.send_to_all ? [] : form.recipient_ids,
+        send_to_all: form.send_to_all,
+      })
 
       setSuccess(true)
       setShowCompose(false)
@@ -147,16 +118,13 @@ export default function NotificationPage() {
 
       {/* Success Toast */}
       {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl"
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl"
         >
           <CheckCircle className="w-5 h-5" />
           <span className="font-medium">
             Notification sent successfully!
           </span>
-        </motion.div>
+        </div>
       )}
 
       {/* Notifications List */}
@@ -180,13 +148,7 @@ export default function NotificationPage() {
         ) : (
           <div className="divide-y divide-slate-50">
             {notifications.map((n, i) => (
-              <motion.div
-                key={`${n.batch_id}-${i}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="p-6 hover:bg-slate-50/50 transition-colors"
-              >
+              <div key={`${n.batch_id}-${i}`} className="p-6 hover:bg-slate-50/50 transition-colors">
                 <div className="flex items-start justify-between gap-4">
 
                   <div className="flex items-start gap-4">
@@ -216,14 +178,13 @@ export default function NotificationPage() {
                   </div>
 
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* Compose Modal */}
-      <AnimatePresence>
         {showCompose && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
 
@@ -231,12 +192,7 @@ export default function NotificationPage() {
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative bg-white rounded-2xl shadow-2xl p-8 w-[500px] max-w-[95vw] border border-slate-100"
-            >
+            <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-[500px] max-w-[95vw] border border-slate-100">
 
               <button
                 onClick={() => setShowCompose(false)}
@@ -268,8 +224,8 @@ export default function NotificationPage() {
                         })
                       }
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${form.send_to_all
-                          ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                          : "bg-white border-slate-200 text-slate-500"
+                        ? "bg-indigo-50 border-indigo-300 text-indigo-700"
+                        : "bg-white border-slate-200 text-slate-500"
                         }`}
                     >
                       <Users className="w-4 h-4" />
@@ -285,8 +241,8 @@ export default function NotificationPage() {
                         })
                       }
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${!form.send_to_all
-                          ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                          : "bg-white border-slate-200 text-slate-500"
+                        ? "bg-indigo-50 border-indigo-300 text-indigo-700"
+                        : "bg-white border-slate-200 text-slate-500"
                         }`}
                     >
                       <User className="w-4 h-4" />
@@ -346,7 +302,7 @@ export default function NotificationPage() {
                 />
 
                 <button
-                  onClick={sendNotification}
+                  onClick={handleSend}
                   disabled={sending}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold"
                 >
@@ -354,10 +310,9 @@ export default function NotificationPage() {
                 </button>
 
               </div>
-            </motion.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
 
     </div>
   )

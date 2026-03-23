@@ -1,7 +1,7 @@
 "use client";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getResidentProfile, updateResidentProfile } from "@/services/residentApi";
 
 export default function ResidentProfileUpdate() {
     const router = useRouter();
@@ -20,10 +20,7 @@ export default function ResidentProfileUpdate() {
 
     const fetchUser = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/resident/profile", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await getResidentProfile();
             setData(res.data.user || res.data); // adjust based on your backend
             setFormData({
                 name: res.data.user?.full_name || "",
@@ -46,14 +43,7 @@ export default function ResidentProfileUpdate() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.put(
-                "http://localhost:5000/api/resident/profile",
-                formData,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+            const res = await updateResidentProfile(formData);
             console.log(res.data);
             alert("Profile updated successfully!");
             // Redirect back to /profile after successful update

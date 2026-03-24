@@ -108,9 +108,17 @@ export default function SubscriptionPage() {
                   <>
                     <div className="mb-4">
                       <p className="text-sm text-slate-500 font-medium">Monthly Rate</p>
+
                       <p className="text-3xl font-bold text-slate-900 mt-1 tracking-tight">
-                        ₹{parseFloat(plan.monthly_rate).toLocaleString()}
+                        ₹{parseFloat(plan.current_rate).toLocaleString()}
                         <span className="text-sm font-normal text-slate-400">/month</span>
+                      </p>
+
+                      <p className="text-sm text-slate-500 mt-2">
+                        From next month:{" "}
+                        <span className="font-semibold text-indigo-600">
+                          ₹{parseFloat(plan.next_rate).toLocaleString()}
+                        </span>
                       </p>
                     </div>
 
@@ -119,7 +127,7 @@ export default function SubscriptionPage() {
                         className="flex-1 bg-slate-100 hover:bg-amber-50 hover:text-amber-600 text-slate-600 px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
                         onClick={() => {
                           setEditId(plan.plan_id)
-                          setEditRate(plan.monthly_rate)
+                          setEditRate(plan.current_rate)
                         }}
                       >
                         <Edit2 className="w-3.5 h-3.5" />

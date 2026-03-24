@@ -2,7 +2,21 @@ const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 
 // Get monthly records for admin & specific month
-const getMonthlyRecords = async (admin_id, month) => {
+const getMonthlyRecords = async (admin_id, month, page = 1, limit = 5) => {
+  const offset = (page - 1) * limit
+
+  const totalRes = await pool.query(
+    `
+    SELECT COUNT(*) 
+    FROM monthly_records mr
+    JOIN flats f ON mr.flat_id = f.flat_id
+    WHERE f.admin_id = $1
+    AND f.resident_id IS NOT NULL
+    AND DATE_TRUNC('month', mr.billing_month) = DATE_TRUNC('month', $2::DATE)
+    `,
+    [admin_id, month]
+  )
+
   const result = await pool.query(
     `
     SELECT 
@@ -18,15 +32,18 @@ const getMonthlyRecords = async (admin_id, month) => {
     JOIN flats f ON mr.flat_id = f.flat_id
     WHERE f.admin_id = $1
     AND f.resident_id IS NOT NULL
-      AND DATE_TRUNC('month', mr.billing_month) = DATE_TRUNC('month', $2::DATE)
+    AND DATE_TRUNC('month', mr.billing_month) = DATE_TRUNC('month', $2::DATE)
     ORDER BY f.flat_number
+    LIMIT $3 OFFSET $4
     `,
-    [admin_id, month]
-  );
+    [admin_id, month, limit, offset]
+  )
 
-  return result.rows;
-};
-
+  return {
+    records: result.rows,
+    totalPages: Math.ceil(totalRes.rows[0].count / limit),
+  }
+}
 // Mark a monthly record as paid
 const markAsPaid = async (record_id, admin_id) => {
   const client = await pool.connect();

@@ -12,6 +12,9 @@ export default function NotificationPage() {
   const [sending, setSending] = useState(false)
   const [success, setSuccess] = useState(false)
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
   const [form, setForm] = useState({
     recipient_ids: [] as string[],
     title: "",
@@ -19,14 +22,19 @@ export default function NotificationPage() {
     send_to_all: true,
   })
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (silent = false) => {
     try {
-      const res = await getAdminNotifications()
-      setNotifications(res.data)
+      if (!silent) setLoading(true)
+
+      const res = await getAdminNotifications(page)
+
+      setNotifications(res.data.notifications)
+      setTotalPages(res.data.totalPages || 1)
+
     } catch (err) {
       console.error(err)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -41,9 +49,18 @@ export default function NotificationPage() {
 
   useEffect(() => {
     fetchNotifications()
-    fetchResidents()
-    const interval = setInterval(fetchNotifications, 5000)
+  }, [page])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotifications(true)
+    }, 5000)
+
     return () => clearInterval(interval)
+  }, [page])
+
+  useEffect(() => {
+    fetchResidents()
   }, [])
 
   const handleSend = async () => {
@@ -184,135 +201,159 @@ export default function NotificationPage() {
         )}
       </div>
 
+      <div className="flex justify-center gap-4 mt-6">
+
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Previous
+        </button>
+
+        <span className="px-4 py-2">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Next
+        </button>
+
+      </div>
+
       {/* Compose Modal */}
-        {showCompose && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {showCompose && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
 
-            <div onClick={() => setShowCompose(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
+          <div onClick={() => setShowCompose(false)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
 
-            <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-[500px] max-w-[95vw] border border-slate-100">
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-[500px] max-w-[95vw] border border-slate-100">
 
-              <button
-                onClick={() => setShowCompose(false)}
-                className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-lg"
-              >
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
+            <button
+              onClick={() => setShowCompose(false)}
+              className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-lg"
+            >
+              <X className="w-5 h-5 text-slate-400" />
+            </button>
 
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                <Send className="w-5 h-5 text-indigo-500" />
-                Compose Notification
-              </h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Send className="w-5 h-5 text-indigo-500" />
+              Compose Notification
+            </h2>
 
-              <div className="space-y-4">
+            <div className="space-y-4">
 
-                <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                    Recipients
-                  </label>
+              <div>
+                <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                  Recipients
+                </label>
 
-                  <div className="flex gap-2 mb-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          send_to_all: true,
-                          recipient_ids: [],
-                        })
-                      }
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${form.send_to_all
-                        ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                        : "bg-white border-slate-200 text-slate-500"
-                        }`}
-                    >
-                      <Users className="w-4 h-4" />
-                      All Residents
-                    </button>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        send_to_all: true,
+                        recipient_ids: [],
+                      })
+                    }
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${form.send_to_all
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
+                      : "bg-white border-slate-200 text-slate-500"
+                      }`}
+                  >
+                    <Users className="w-4 h-4" />
+                    All Residents
+                  </button>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          send_to_all: false,
-                        })
-                      }
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${!form.send_to_all
-                        ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                        : "bg-white border-slate-200 text-slate-500"
-                        }`}
-                    >
-                      <User className="w-4 h-4" />
-                      Specific
-                    </button>
-                  </div>
-
-                  {!form.send_to_all && (
-                    <select
-                      multiple
-                      value={form.recipient_ids}
-                      onChange={(e) => {
-                        const selected = Array.from(
-                          e.target.selectedOptions,
-                          (o) => o.value
-                        )
-
-                        setForm({
-                          ...form,
-                          recipient_ids: selected,
-                        })
-                      }}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 min-h-[100px]"
-                    >
-                      {residents.map((r) => (
-                        <option key={r.user_id} value={r.user_id}>
-                          {r.full_name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        send_to_all: false,
+                      })
+                    }
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border ${!form.send_to_all
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
+                      : "bg-white border-slate-200 text-slate-500"
+                      }`}
+                  >
+                    <User className="w-4 h-4" />
+                    Specific
+                  </button>
                 </div>
 
-                <input
-                  value={form.title}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      title: e.target.value,
-                    })
-                  }
-                  placeholder="Title"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50"
-                />
+                {!form.send_to_all && (
+                  <select
+                    multiple
+                    value={form.recipient_ids}
+                    onChange={(e) => {
+                      const selected = Array.from(
+                        e.target.selectedOptions,
+                        (o) => o.value
+                      )
 
-                <textarea
-                  rows={4}
-                  value={form.message}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      message: e.target.value,
-                    })
-                  }
-                  placeholder="Message"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 resize-none"
-                />
-
-                <button
-                  onClick={handleSend}
-                  disabled={sending}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold"
-                >
-                  {sending ? "Sending..." : "Send Notification"}
-                </button>
-
+                      setForm({
+                        ...form,
+                        recipient_ids: selected,
+                      })
+                    }}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 min-h-[100px]"
+                  >
+                    {residents.map((r) => (
+                      <option key={r.user_id} value={r.user_id}>
+                        {r.full_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
+
+              <input
+                value={form.title}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    title: e.target.value,
+                  })
+                }
+                placeholder="Title"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50"
+              />
+
+              <textarea
+                rows={4}
+                value={form.message}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    message: e.target.value,
+                  })
+                }
+                placeholder="Message"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 resize-none"
+              />
+
+              <button
+                onClick={handleSend}
+                disabled={sending}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold"
+              >
+                {sending ? "Sending..." : "Send Notification"}
+              </button>
+
             </div>
           </div>
-        )}
+        </div>
+      )}
 
     </div>
   )

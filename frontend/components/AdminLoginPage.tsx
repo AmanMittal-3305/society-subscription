@@ -66,6 +66,16 @@ export default function AdminLoginPage() {
         </div>
       </div>
 
+      {/* <button
+        type="button"
+        onClick={() =>
+          window.location.href = "http://localhost:5000/api/auth/google"
+        }
+        className="w-full bg-blue-500 text-white py-3.5 rounded-xl font-semibold cursor-pointer"
+      >
+        Login with Google
+      </button> */}
+
 
       <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-200 shadow-lg shadow-slate-900/25 hover:shadow-slate-900/40 active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-60">
         {loading ? (

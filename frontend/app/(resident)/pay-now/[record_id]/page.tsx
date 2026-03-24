@@ -1,43 +1,67 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { createCheckoutSession } from "@/services/residentApi";
+import { savePayment } from "@/services/residentApi";
 
 export default function PayNowPage() {
-  const params = useParams();
-  const recordId = params.record_id;
+    const params = useParams();
+    const router = useRouter();
 
-  const [message, setMessage] = useState("");
+    const recordId = params.record_id as string;
 
-  const handlePayment = async () => {
-    try {
-      const response = await createCheckoutSession(recordId as string);
-      window.location.href = response.data.url;
-    } catch (err: any) {
-      console.error(err);
-      setMessage("Payment failed");
-    }
-  };
+    const [paymentMode, setPaymentMode] = useState("ONLINE");
+    const [message, setMessage] = useState("");
 
-  return (
-    <div className="p-8 max-w-md mx-auto bg-white rounded-2xl shadow mt-10">
-      <h1 className="text-xl font-bold mb-4">Pay Subscription</h1>
+    const handlePayment = async () => {
+        try {
+            const res = await savePayment({
+                record_id: recordId,
+                payment_mode: paymentMode,
+                transaction_id: ""
+            });
 
-      <p className="mb-4 text-sm text-gray-500">
-        Record ID: {recordId}
-      </p>
+            setMessage(res.data.message);
 
-      <button
-        onClick={handlePayment}
-        className="w-full bg-black text-white py-2 rounded-lg"
-      >
-        Confirm Payment
-      </button>
+            setTimeout(() => {
+                router.push("/dashboard");
+            }, 1500);
 
-      {message && (
-        <p className="mt-4 text-center">{message}</p>
-      )}
-    </div>
-  );
+        } catch (err: any) {
+            setMessage(err.response?.data?.message || "Payment failed");
+        }
+    };
+
+    return (
+        <div className="p-8 max-w-md mx-auto bg-white rounded-2xl shadow mt-10">
+            <h1 className="text-xl font-bold mb-4">Pay Subscription</h1>
+
+            <p className="mb-4 text-sm text-gray-500">
+                Record ID: {recordId}
+            </p>
+
+            <select
+                value={paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 mb-4"
+            >
+                <option value="UPI">UPI</option>
+                <option value="ONLINE">ONLINE</option>
+                <option value="NEFT">NEFT</option>
+                <option value="CHEQUE">CHEQUE</option>
+                <option value="CASH">CASH</option>
+            </select>
+
+            <button
+                onClick={handlePayment}
+                className="w-full bg-black text-white py-2 rounded-lg"
+            >
+                Confirm Payment
+            </button>
+
+            {message && (
+                <p className="mt-4 text-center">{message}</p>
+            )}
+        </div>
+    );
 }

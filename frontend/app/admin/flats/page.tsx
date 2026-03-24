@@ -1,12 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  Image
-} from "lucide-react"
+import { Plus, Edit2, Trash2, Undo } from "lucide-react"
 import {
   getFlats,
   createFlat,
@@ -15,7 +10,7 @@ import {
   restoreFlat as restoreFlatApi,
   getAvailableResidents,
   assignResident,
-  registerResidentToFlat,
+  registerResidentToFlat
 } from "@/services/adminApi"
 
 export default function FlatsPage() {
@@ -23,9 +18,16 @@ export default function FlatsPage() {
   const [search, setSearch] = useState("")
 
   const [flatNumber, setFlatNumber] = useState("")
-  const [ownerName, setOwnerName] = useState("")
   const [flatType, setFlatType] = useState("1BHK")
   const [address, setAddress] = useState("")
+
+  const [ownerDetails, setOwnerDetails] = useState({
+    owner_name: "",
+    owner_email: "",
+    owner_phone: "",
+    assign_flat_itself: false
+  })
+
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -36,10 +38,6 @@ export default function FlatsPage() {
   const [residents, setResidents] = useState<any[]>([])
   const [selectedResident, setSelectedResident] = useState("")
 
-  const [showImageModal, setShowImageModal] = useState(false)
-  const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [currentImage, setCurrentImage] = useState(0)
-
   const [newResidentName, setNewResidentName] = useState("")
   const [newResidentEmail, setNewResidentEmail] = useState("")
   const [newResidentPhone, setNewResidentPhone] = useState("")
@@ -47,38 +45,21 @@ export default function FlatsPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const flatImages = [
-    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
-    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
-    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
-    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg",
-    "https://www.manglamgroup.com/wp-content/uploads/2024/01/swimmingpool-Corner-Night_cc.jpg"
-  ]
-
   const fetchFlats = async () => {
     try {
-      const res = await getFlats(page)
+      const res = await getFlats(page, 5, search)
+
       setFlats(res.data.flats || [])
       setTotalPages(res.data.totalPages || 1)
     } catch (err) {
       console.error(err)
-      setFlats([])
     }
   }
 
   const fetchResidents = async () => {
     try {
       const res = await getAvailableResidents()
-      setResidents(res.data)
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleRestore = async (id: string) => {
-    try {
-      await restoreFlatApi(id)
-      fetchFlats()
+      setResidents(res.data || [])
     } catch (err) {
       console.error(err)
     }
@@ -86,15 +67,32 @@ export default function FlatsPage() {
 
   useEffect(() => {
     fetchFlats()
-  }, [page])
+  }, [page, search])
+
+  const resetForm = () => {
+    setFlatNumber("")
+    setFlatType("1BHK")
+    setAddress("")
+    setOwnerDetails({
+      owner_name: "",
+      owner_email: "",
+      owner_phone: "",
+      assign_flat_itself: false
+    })
+    setEditingId(null)
+    setShowForm(false)
+  }
 
   const saveFlat = async () => {
     try {
       const data = {
         flat_number: flatNumber,
-        owner_name: ownerName,
         flat_type: flatType,
-        address
+        address,
+        owner_name: ownerDetails.owner_name,
+        owner_email: ownerDetails.owner_email,
+        owner_phone: ownerDetails.owner_phone,
+        assign_flat_itself: ownerDetails.assign_flat_itself
       }
 
       if (editingId) {
@@ -103,22 +101,7 @@ export default function FlatsPage() {
         await createFlat(data)
       }
 
-      setFlatNumber("")
-      setOwnerName("")
-      setFlatType("1BHK")
-      setAddress("")
-      setEditingId(null)
-      setShowForm(false)
-
-      fetchFlats()
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteFlatApi(id)
+      resetForm()
       fetchFlats()
     } catch (err) {
       console.error(err)
@@ -126,12 +109,29 @@ export default function FlatsPage() {
   }
 
   const handleEdit = (flat: any) => {
-    setEditingId(flat.flat_id)
-    setFlatNumber(flat.flat_number)
-    setOwnerName(flat.owner_name)
-    setFlatType(flat.flat_type)
-    setAddress(flat.address)
-    setShowForm(true)
+  setEditingId(flat.flat_id)
+  setFlatNumber(flat.flat_number)
+  setFlatType(flat.flat_type)
+  setAddress(flat.address)
+
+  setOwnerDetails({
+    owner_name: flat.owner_name || "",
+    owner_email: flat.owner_email || "",
+    owner_phone: flat.owner_phone || "",
+    assign_flat_itself: false
+  })
+
+  setShowForm(true)
+}
+
+  const handleDelete = async (id: string) => {
+    await deleteFlatApi(id)
+    fetchFlats()
+  }
+
+  const handleRestore = async (id: string) => {
+    await restoreFlatApi(id)
+    fetchFlats()
   }
 
   const openResidentModal = async (flatId: string) => {
@@ -144,7 +144,6 @@ export default function FlatsPage() {
   const handleAssignResident = async () => {
     try {
       await assignResident(selectedFlat, selectedResident)
-      setSelectedResident("")
       setShowResidentModal(false)
       fetchFlats()
     } catch (err) {
@@ -164,55 +163,29 @@ export default function FlatsPage() {
       setNewResidentEmail("")
       setNewResidentPhone("")
 
-      await fetchResidents()
-
       setShowRegisterModal(false)
-      setShowResidentModal(true)
-
+      fetchFlats()
     } catch (err) {
       console.error(err)
     }
   }
 
-  const openImageModal = () => {
-    setSelectedImages(flatImages)
-    setCurrentImage(0)
-    setShowImageModal(true)
-  }
-
-  const nextImage = () => {
-    setCurrentImage((prev) =>
-      prev === selectedImages.length - 1 ? 0 : prev + 1
-    )
-  }
-
-  const prevImage = () => {
-    setCurrentImage((prev) =>
-      prev === 0 ? selectedImages.length - 1 : prev - 1
-    )
-  }
-
-
-  const filteredFlats = flats.filter((flat) =>
-    flat.flat_number?.toLowerCase().includes(search.toLowerCase())
-  )
+  // const filteredFla = flats.filter((flat) =>
+  //   flat.flat_number?.toLowerCase().includes(search.toLowerCase())
+  // )
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-50">
 
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Flats Management</h1>
 
         <button
           onClick={() => {
+            resetForm()
             setShowForm(true)
-            setEditingId(null)
-            setFlatNumber("")
-            setOwnerName("")
-            setFlatType("1BHK")
-            setAddress("")
           }}
-          className="bg-indigo-600 text-white px-5 py-2 rounded-xl flex gap-2"
+          className="bg-indigo-600 hover:bg-indigo-700 transition text-white px-5 py-2 rounded-xl flex gap-2 items-center shadow-sm"
         >
           <Plus className="w-5 h-5" />
           Add Flat
@@ -220,21 +193,14 @@ export default function FlatsPage() {
       </div>
 
       {showForm && (
-        <div className="bg-white p-6 rounded-2xl shadow">
+        <div className="bg-white p-6 rounded-2xl shadow-md border space-y-5">
           <div className="grid grid-cols-4 gap-4">
 
             <input
-              className="border p-2 rounded"
+              className="border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Flat Number"
               value={flatNumber}
               onChange={(e) => setFlatNumber(e.target.value)}
-            />
-
-            <input
-              className="border p-2 rounded"
-              placeholder="Owner Name"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
             />
 
             <select
@@ -254,181 +220,197 @@ export default function FlatsPage() {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
-
           </div>
 
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={saveFlat}
-              className="bg-indigo-600 text-white px-5 py-2 rounded"
-            >
+          <div className="grid grid-cols-3 gap-4">
+
+            <input
+              className="border p-2 rounded"
+              placeholder="Owner Name"
+              value={ownerDetails.owner_name}
+              onChange={(e) =>
+                setOwnerDetails({ ...ownerDetails, owner_name: e.target.value })
+              }
+            />
+
+            <input
+              className="border p-2 rounded"
+              placeholder="Owner Email"
+              value={ownerDetails.owner_email}
+              onChange={(e) =>
+                setOwnerDetails({ ...ownerDetails, owner_email: e.target.value })
+              }
+            />
+
+            <input
+              className="border p-2 rounded"
+              placeholder="Owner Phone"
+              value={ownerDetails.owner_phone}
+              onChange={(e) =>
+                setOwnerDetails({ ...ownerDetails, owner_phone: e.target.value })
+              }
+            />
+          </div>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={ownerDetails.assign_flat_itself}
+              onChange={(e) =>
+                setOwnerDetails({
+                  ...ownerDetails,
+                  assign_flat_itself: e.target.checked
+                })
+              }
+            />
+            Owner lives in this flat
+          </label>
+
+          <div className="flex gap-3">
+            <button onClick={saveFlat} className="bg-indigo-600 hover:bg-indigo-700 transition text-white px-5 py-2 rounded-lg shadow-sm">
               Save
             </button>
 
-            <button
-              onClick={() => setShowForm(false)}
-              className="px-5 py-2 border rounded"
-            >
+            <button onClick={resetForm} className="px-5 py-2 border rounded-lg hover:bg-slate-100 transition">
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      {showImageModal && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-
-          <div className="bg-white p-6 rounded-2xl w-[850px] relative">
-
-            <h2 className="text-2xl font-bold text-center mb-4">
-              Flat Images
-            </h2>
-
-            <div className="relative flex justify-center items-center">
-
-              <button
-                onClick={prevImage}
-                className="absolute left-2 bg-white shadow-lg px-4 py-2 rounded-full text-xl"
-              >
-                ←
-              </button>
-
-              <img
-                src={selectedImages[currentImage]}
-                alt="Flat"
-                className="w-full h-[450px] object-cover rounded-xl"
-              />
-
-              <button
-                onClick={nextImage}
-                className="absolute right-2 bg-white shadow-lg px-4 py-2 rounded-full text-xl"
-              >
-                →
-              </button>
-
-            </div>
-
-            <div className="text-center mt-3 text-gray-500">
-              {currentImage + 1} / {selectedImages.length}
-            </div>
-
-            <div className="flex justify-center gap-3 mt-4 flex-wrap">
-              {selectedImages.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`Thumbnail ${index}`}
-                  onClick={() => setCurrentImage(index)}
-                  className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${currentImage === index
-                    ? "border-indigo-600"
-                    : "border-gray-300"
-                    }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={() => setShowImageModal(false)}
-              className="mt-5 w-full border py-2 rounded-lg"
-            >
-              Close
-            </button>
-
-          </div>
-
-        </div>
-      )}
-
       <input
-        className="border p-2 rounded w-full"
+        className="border border-slate-300 p-3 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm"
         placeholder="Search flat"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          setPage(1)
+        }}
       />
 
-      <table className="w-full bg-white rounded-xl shadow overflow-hidden">
-        <thead>
-          <tr className="bg-slate-100">
-            <th className="p-4">Flat</th>
-            <th>Owner</th>
-            <th>Resident</th>
-            <th>Type</th>
-            <th>Address</th>
-            <th>Images</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+  <table className="w-full">
 
-        <tbody>
-          {filteredFlats.map((flat) => (
-            <tr
-              key={flat.flat_id}
-              className={`border-t ${flat.is_active === false ? "opacity-40 bg-gray-100" : ""}`}
-            >
+    <thead>
+      <tr className="bg-slate-100 text-slate-700">
+        <th className="p-4 text-left font-semibold">Flat</th>
+        <th className="p-4 text-left font-semibold">Owner</th>
+        <th className="p-4 text-left font-semibold">Resident</th>
+        <th className="p-4 text-left font-semibold">Type</th>
+        <th className="p-4 text-left font-semibold">Address</th>
+        <th className="p-4 text-left font-semibold">Actions</th>
+      </tr>
+    </thead>
 
-              <td className="p-4">{flat.flat_number}</td>
-              <td>{flat.owner_name}</td>
+    <tbody>
+      {flats.map((flat) => (
+        <tr
+          key={flat.flat_id}
+          className={`border-t border-slate-100 hover:bg-slate-50 transition-all duration-200 ${
+            !flat.is_active ? "text-gray-400 bg-gray-50" : ""
+          }`}
+        >
 
-              <td>
-                {flat.resident_name ? (
-                  flat.resident_name
-                ) : (
-                  <button
-                    onClick={() => openResidentModal(flat.flat_id)}
-                    disabled={flat.is_active === false}
-                    className={`${flat.is_active === false
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-indigo-600"
-                      }`}
-                  >
-                    Add Resident
-                  </button>
-                )}
-              </td>
+          <td className="p-4 font-medium text-slate-800">
+            {flat.flat_number}
+          </td>
 
-              <td>{flat.flat_type}</td>
-              <td>{flat.address}</td>
+          <td className="p-4">
+            {flat.owner_name}
+          </td>
 
-              <td>
+          <td className="p-4">
+            {flat.resident_name ? (
+              flat.resident_name
+            ) : (
+              <button
+                onClick={() => openResidentModal(flat.flat_id)}
+                className={`text-indigo-600 font-medium hover:text-indigo-800 transition ${
+                  !flat.is_active ? "opacity-40 cursor-not-allowed" : ""
+                }`}
+              >
+                Add Resident
+              </button>
+            )}
+          </td>
+
+          <td className="p-4">
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-sm font-medium">
+              {flat.flat_type}
+            </span>
+          </td>
+
+          <td className="p-4 text-slate-600">
+            {flat.address}
+          </td>
+
+          <td className="p-4">
+            <div className="flex gap-2">
+
+              <button
+                onClick={() => handleEdit(flat)}
+                disabled={!flat.is_active}
+                className={`p-2 rounded-lg transition hover:bg-indigo-50 ${
+                  !flat.is_active ? "opacity-40 cursor-not-allowed" : ""
+                }`}
+              >
+                <Edit2 className="w-4 h-4 text-indigo-600" />
+              </button>
+
+              {flat.is_active ? (
                 <button
-                  onClick={openImageModal}
-                  className="text-indigo-600"
+                  onClick={() => handleDelete(flat.flat_id)}
+                  className="p-2 rounded-lg hover:bg-red-50 transition"
                 >
-                  <Image className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4 text-red-500" />
                 </button>
-              </td>
-
-              <td className="flex gap-2 p-4">
+              ) : (
                 <button
-                  onClick={() => handleEdit(flat)}
-                  disabled={flat.is_active === false}
+                  onClick={() => handleRestore(flat.flat_id)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100 transition text-gray-500"
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Undo className="w-4 h-4" />
+                  <span className="text-sm">Undo</span>
                 </button>
+              )}
 
-                {flat.is_active ? (
-                  <button onClick={() => handleDelete(flat.flat_id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleRestore(flat.flat_id)}
-                    className="text-xs text-green-600"
-                  >
-                    Restore
-                  </button>
-                )}
-              </td>
+            </div>
+          </td>
 
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        </tr>
+      ))}
+    </tbody>
+
+  </table>
+</div>
+
+      <div className="flex justify-center gap-4 mt-6">
+
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Previous
+        </button>
+
+        <span className="px-4 py-2">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Next
+        </button>
+
+      </div>
 
       {showResidentModal && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-40">
-
-          <div className="bg-white p-6 rounded-2xl w-[400px] space-y-4">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-2xl w-[400px] space-y-4 shadow-xl">
 
             <h2 className="text-xl font-bold">Add Resident</h2>
 
@@ -453,8 +435,6 @@ export default function FlatsPage() {
               Assign Existing Resident
             </button>
 
-            <hr />
-
             <button
               onClick={() => {
                 setShowResidentModal(false)
@@ -473,16 +453,12 @@ export default function FlatsPage() {
             </button>
 
           </div>
-
         </div>
       )}
 
       {showRegisterModal && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-
-          <div className="bg-white p-6 rounded-2xl w-[400px] space-y-4">
-
-            <h2 className="text-xl font-bold">Register New Resident</h2>
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl w-[400px] space-y-4">
 
             <input
               placeholder="Full Name"
@@ -513,43 +489,15 @@ export default function FlatsPage() {
             </button>
 
             <button
-              onClick={() => {
-                setShowRegisterModal(false)
-                setShowResidentModal(true)
-              }}
+              onClick={() => setShowRegisterModal(false)}
               className="w-full border py-2 rounded"
             >
-              Back
+              Cancel
             </button>
 
           </div>
-
         </div>
       )}
-
-      <div className="flex justify-center gap-3 mt-6">
-
-        <button
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-
-        <span className="px-4 py-2">
-          Page {page} of {totalPages}
-        </span>
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-
-      </div>
 
     </div>
   )

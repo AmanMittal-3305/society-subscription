@@ -10,10 +10,14 @@ export default function MonthlyRecordsPage() {
   const [records, setRecords] = useState<any[]>([])
   const [month, setMonth] = useState(new Date())
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
   const fetchRecords = async () => {
     try {
-      const res = await getMonthlyRecords(month)
-      setRecords(res.data)
+      const res = await getMonthlyRecords(month, page)
+      setRecords(res.data.records)
+setTotalPages(res.data.totalPages || 1)
     } catch (err) {
       console.error("Error fetching records:", err)
     }
@@ -21,7 +25,7 @@ export default function MonthlyRecordsPage() {
 
   useEffect(() => {
     fetchRecords()
-  }, [])
+  }, [page])
 
   const handleMarkPaid = async (record_id: string) => {
     try {
@@ -43,10 +47,12 @@ export default function MonthlyRecordsPage() {
             if (date) {
               setMonth(date)
             }
+            setPage(1)
           }}
             dateFormat="MM/yyyy"
             showMonthYearPicker
             className="mt-1 cursor-pointer w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+
           />
         </div>
         <button
@@ -110,6 +116,30 @@ export default function MonthlyRecordsPage() {
             )}
           </tbody>
         </table>
+        
+      </div>
+      <div className="flex justify-center gap-4 mt-6">
+
+        <button
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Previous
+        </button>
+
+        <span className="px-4 py-2">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 border rounded disabled:opacity-50 cursor-pointer"
+        >
+          Next
+        </button>
+
       </div>
     </div>
   )

@@ -21,7 +21,7 @@ router.get("/subscriptions/:id", residentSubscriptionController.getSubscriptionD
 
 router.post("/pay-now", paymentController.payNow)
 router.get("/pending-payments", paymentController.getPendingPayments)
-router.post("/create-checkout-session", paymentController.createCheckoutSession)
+// router.post("/create-checkout-session", paymentController.createCheckoutSession)
 
 router.get("/notifications", notificationController.getNotifications);
 router.put("/save-token", notificationController.saveFCMToken);

@@ -5,10 +5,12 @@ exports.getRecords = async (req, res) => {
   try {
     const admin_id = req.user.user_id;
     const month = req.query.month;
+    const page = parseInt(req.query.page) || 1
+const limit = parseInt(req.query.limit) || 5
 
     if (!month) return res.status(400).json({ error: "month is required" });
 
-    const records = await service.getMonthlyRecords(admin_id, month);
+    const records = await service.getMonthlyRecords(admin_id, month, page, limit);
     res.json(records);
   } catch (err) {
     console.error("Monthly Records Error:", err.message);

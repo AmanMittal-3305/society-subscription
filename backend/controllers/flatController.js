@@ -6,11 +6,12 @@ const getFlats = async (req, res) => {
     const adminId = req.user.user_id
 
     const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10
+const limit = parseInt(req.query.limit) || 5
+const search = req.query.search || ""
 
-    const flats = await flatService.getAllFlats(adminId, page, limit)
+const flats = await flatService.getAllFlats(adminId, page, limit, search)
 
-    res.json(flats)
+res.json(flats)
 
   } catch (err) {
 
@@ -124,12 +125,25 @@ const getAvailableResidents = async(req,res)=>{
 
 }
 
-const assignResident = async(req,res)=>{
-  const flat = await flatService.assignResident(
-    req.params.id,
-    req.body.resident_id
-  )
-  res.json(flat)
+const assignResident = async (req, res) => {
+  try {
+    console.log("flat id:", req.params.id)
+    console.log("resident id:", req.body.resident_id)
+
+    const flat = await flatService.assignResident(
+      req.params.id,
+      req.body.resident_id
+    )
+
+    res.json(flat)
+
+  } catch (err) {
+    console.error("ASSIGN ERROR FULL:", err)
+
+    res.status(500).json({
+      message: err.message
+    })
+  }
 }
 
 const registerResident = async (req, res) => {

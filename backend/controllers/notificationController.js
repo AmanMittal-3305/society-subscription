@@ -1,145 +1,104 @@
-const pool = require("../config/db");
-const { sendPushNotification } = require("../services/notificationService");
+const {
+  createBatchId,
+  getAllResidentsWithToken,
+  insertNotification,
+  getUserToken,
+  getNotificationCount,
+  getNotificationsPaginated,
+  getAllResidents,
+  sendPushNotification
+} = require("../services/notificationService");
+
+// const {  } = require("../services/notificationService");
 
 const sendNotification = async (req, res) => {
   try {
     const { title, message, recipient_ids, send_to_all } = req.body;
     const adminId = req.user.user_id;
 
-    const batchResult = await pool.query(`SELECT gen_random_uuid() AS id`);
-    const batchId = batchResult.rows[0].id;
+    const batchId = await createBatchId();
 
     if (send_to_all) {
-      const residents = await pool.query(`
-        SELECT user_id, full_name, fcm_token
-        FROM users
-        WHERE role = 'RESIDENT'
-      `);
+      const residents = await getAllResidentsWithToken();
 
-      for (const resident of residents.rows) {
-        await pool.query(
-          `
-          INSERT INTO notifications
-          (title, message, recipient_id, sender_id, batch_id)
-          VALUES ($1, $2, $3, $4, $5)
-          `,
-          [title, message, resident.user_id, adminId, batchId]
-        );
+      for (const resident of residents) {
+        await insertNotification(title, message, resident.user_id, adminId, batchId);
 
         if (resident.fcm_token) {
-          await sendPushNotification(
-            resident.fcm_token,
-            title,
-            message
-          );
+          await sendPushNotification(resident.fcm_token, title, message);
         }
       }
 
     } else {
       for (const residentId of recipient_ids) {
-        await pool.query(
-          `
-          INSERT INTO notifications
-          (title, message, recipient_id, sender_id, batch_id)
-          VALUES ($1, $2, $3, $4, $5)
-          `,
-          [title, message, residentId, adminId, batchId]
-        );
+        await insertNotification(title, message, residentId, adminId, batchId);
 
-        const user = await pool.query(
-          `
-          SELECT fcm_token
-          FROM users
-          WHERE user_id = $1
-          `,
-          [residentId]
-        );
+        const token = await getUserToken(residentId);
 
-        if (user.rows[0]?.fcm_token) {
-          await sendPushNotification(
-            user.rows[0].fcm_token,
-            title,
-            message
-          );
+        if (token) {
+          await sendPushNotification(token, title, message);
         }
       }
     }
 
-    res.json({
-      success: true
-    });
+    res.json({ success: true });
 
   } catch (e) {
     console.error(e);
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 };
 
 const getNotifications = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT
-        n.batch_id,
-        n.title,
-        n.message,
-        MAX(n.sent_at) AS sent_at,
-        STRING_AGG(u.full_name, ', ') AS recipients
-      FROM notifications n
-      LEFT JOIN users u ON n.recipient_id = u.user_id
-      GROUP BY n.batch_id, n.title, n.message
-      ORDER BY MAX(n.sent_at) DESC
-    `);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
 
-    const formatted = result.rows.map((row) => {
-      const names = row.recipients.split(",").map(name => name.trim())
+    const total = await getNotificationCount();
+    const rows = await getNotificationsPaginated(limit, offset);
 
-      let shortRecipients = ""
+    const formatted = rows.map((row) => {
+      const names = row.recipients?.split(",").map(name => name.trim()) || [];
+
+      let shortRecipients = "";
 
       if (names.length <= 2) {
-        shortRecipients = names.join(", ")
+        shortRecipients = names.join(", ");
       } else {
-        shortRecipients = `${names[0]}, ${names[1]} + ${names.length - 2} others`
+        shortRecipients = `${names[0]}, ${names[1]} + ${names.length - 2} others`;
       }
 
       return {
         ...row,
         recipients: shortRecipients
-      }
-    })
+      };
+    });
 
-    res.json(formatted)
+    res.json({
+      notifications: formatted,
+      totalPages: Math.ceil(total / limit)
+    });
 
   } catch (e) {
-    console.error(e)
-    res.status(500).json({
-      success: false
-    })
+    console.error(e);
+    res.status(500).json({ success: false });
   }
-}
+};
 
-const getAllResidents = async (req, res) => {
+const getAllResidentsController = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT user_id, full_name
-      FROM users
-      WHERE role = 'RESIDENT'
-      ORDER BY full_name
-    `)
-
-    res.json(result.rows)
+    const residents = await getAllResidents();
+    res.json(residents);
 
   } catch (e) {
-    console.error(e)
-    res.status(500).json({
-      success: false
-    })
+    console.error(e);
+    res.status(500).json({ success: false });
   }
-}
+};
 
 module.exports = {
   sendNotification,
   getNotifications,
-  getAllResidents
+  getAllResidents: getAllResidentsController
 };
